@@ -1,98 +1,82 @@
-# esp32.EspHub — ESP32/ESP8266 Standard-Firmware für iobroker.esp-hub
+# ESP32.esp-hub — Basis-Firmware
 
+![Version](https://img.shields.io/badge/version-1.7.0-blue)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-00457C.svg?logo=paypal)](https://www.paypal.com/donate/?business=martin%40bchmnn.de&currency_code=EUR)
 
-> Standard-Firmware für den [iobroker.esp-hub](https://github.com/MPunktBPunkt/iobroker.esp-hub) Adapter.
+> **Standard-Firmware für ESP32** — WiFi, Heartbeat, OTA und Web-UI als Ausgangspunkt für alle ESP-Hub-Projekte. Registriert sich beim [iobroker.esp-hub](https://github.com/MPunktBPunkt/iobroker.esp-hub) Adapter.
 
 ---
 
-## Inhalt
+## Überblick
 
-```
-esp32.EspHub/
-└── esp-hub-base/
-    ├── esp-hub-base.ino   Haupt-Sketch
-    ├── config.h           Benutzer-Konfiguration
-    └── README.md
-```
+`esp-hub-base` ist die gemeinsame Basis aller MPunktBPunkt ESP32-Firmwares. Sie übernimmt WLAN-Konfiguration (WiFiManager), periodischen Heartbeat an ioBroker, OTA-Updates und eine einfache Status-Webseite. Eigene Sensoren und Logik werden in klar markierten Abschnitten ergänzt — der Rest bleibt unverändert.
+
+---
+
+## Features
+
+- **WiFiManager** — Captive Portal `ESP-Hub-Setup`, kein Hardcoding nötig
+- **ESP-Hub Heartbeat** — automatische Registrierung und Online-Status
+- **IO-Werte** — eigene Messwerte im Dashboard (`ios`-Objekt)
+- **OTA** — Push vom Hub oder Drag & Drop im Browser
+- **mDNS** — Erreichbar als `http://<name>.local/`
+- **Name-Sync** — Umbenennung im Hub wird übernommen
+
+---
+
+## Voraussetzungen
+
+| Typ | Details |
+|-----|---------|
+| **Board** | ESP32 / ESP8266 |
+| **WiFiManager** | tablatronix / tzapu |
+| **ArduinoJson** | bblanchon v6 oder v7 |
+| **ioBroker** | [iobroker.esp-hub](https://github.com/MPunktBPunkt/iobroker.esp-hub) |
 
 ---
 
 ## Quickstart
 
-### 1. Bibliotheken installieren (Arduino Library Manager)
-
-- **WiFiManager** von tablatronix (tzapu) 
-- **ArduinoJson** von bblanchon (v6 oder v7)
-
-### 2. Board konfigurieren
-
-Arduino IDE → Board: **ESP32 Dev Module** (oder dein spezifisches Board)
-
-### 3. `config.h` anpassen
+1. `esp-hub-base.ino` öffnen
+2. Abschnitt **KONFIGURATION** anpassen:
 
 ```cpp
-#define DEVICE_NAME   "Mein ESP32"         // Angezeigter Name
-#define HUB_HOST      "192.168.178.1"      // ioBroker IP
-#define HUB_PORT      8093                 // ESP-Hub Port
-#define FW_VERSION    "1.0.0"
+#define DEVICE_NAME  "Mein ESP32"
+#define HUB_HOST     "192.168.178.113"
+#define HUB_PORT     8093
 ```
 
-### 4. Flashen & Verbinden
-
-1. Sketch auf ESP32 flashen
-2. ESP startet als WLAN-Hotspot **"ESP-Hub-Setup"**
-3. Mit Smartphone/PC mit diesem WLAN verbinden
-4. Captive Portal öffnet sich automatisch (oder `192.168.4.1` im Browser)
-5. WLAN-Zugangsdaten + ESP-Hub IP eingeben
-6. ESP verbindet sich → erscheint im Dashboard
+3. Flashen → Hotspot **`ESP-Hub-Setup`** → WLAN + Hub-IP konfigurieren
+4. Gerät erscheint im Dashboard: `http://<ioBroker-IP>:8093`
 
 ---
 
-## Eigene IOs hinzufügen
+## Sketch-Struktur
 
-In `esp-hub-base.ino`:
-
-1. `ioTable[]` erweitern:
-```cpp
-IoValue ioTable[] = {
-    { "temperature", "sensor", 0.0, "°C" },
-    { "humidity",    "sensor", 0.0, "%" },
-    { "relay1",      "output", 0.0, "" },
-};
-```
-
-2. `updateIoValues()` mit eigenem Code füllen:
-```cpp
-void updateIoValues() {
-    ioTable[0].value = readTemperature();   // eigene Funktion
-    ioTable[1].value = readHumidity();
-    ioTable[2].value = digitalRead(RELAY1_PIN);
-}
-```
-
-Die Werte erscheinen automatisch in der Device-Card des Dashboards.
+| Abschnitt | Beschreibung | Anpassen? |
+|-----------|--------------|-----------|
+| **KONFIGURATION** | Name, Hub-IP, Intervalle | ✅ |
+| **EIGENE HARDWARE** | Pin-Definitionen | ✅ |
+| **IO-TABELLE** | Messwerte fürs Dashboard | ✅ |
+| **MESSWERTE EINLESEN** | `updateIoValues()` | ✅ |
+| **AB HIER NICHT VERÄNDERN** | WiFi, Heartbeat, OTA, Loop | ❌ |
 
 ---
 
-## OTA-Updates
+## Abgeleitete Projekte
 
-1. Neue Firmware als `.bin` kompilieren (Arduino IDE → Sketch → Exportiere kompilierte Binärdatei)
-2. Im ESP-Hub Dashboard → System → Firmware hochladen
-3. Gerät auswählen + Firmware wählen + "OTA" klicken
-4. Beim nächsten Heartbeat (max. 30s) führt der ESP das Update durch
-
----
-
-## Watchdog
-
-Der Software-Watchdog (`WATCHDOG_TIMEOUT_S = 300`) startet den ESP neu, wenn 5 Minuten kein Heartbeat erfolgreich war. Das verhindert hängende Geräte.
+| Projekt | Beschreibung |
+|---------|--------------|
+| [esp32.network](https://github.com/MPunktBPunkt/esp32.network) | Netzwerk-Scanner |
+| [esp32.webradio](https://github.com/MPunktBPunkt/esp32.webradio) | Web-Radio im Browser |
+| [esp32.io-control](https://github.com/MPunktBPunkt) | GPIO-Controller |
+| [esp32.communicator](https://github.com/MPunktBPunkt) | ESP-NOW Messenger |
 
 ---
 
 ## Lizenz
 
-GPL-3.0 © Martin Buchmann
+GNU General Public License v3.0 © MPunktBPunkt — siehe [LICENSE](LICENSE)
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-00457C.svg?logo=paypal)](https://www.paypal.com/donate/?business=martin%40bchmnn.de&currency_code=EUR)
