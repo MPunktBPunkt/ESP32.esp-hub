@@ -10,18 +10,19 @@
 
 ## Überblick
 
-`esp-hub-base` ist die gemeinsame Basis aller MPunktBPunkt ESP32-Firmwares. Sie übernimmt WLAN-Konfiguration (WiFiManager), periodischen Heartbeat an ioBroker, OTA-Updates und eine einfache Status-Webseite. Eigene Sensoren und Logik werden in klar markierten Abschnitten ergänzt — der Rest bleibt unverändert.
+`esp-hub-base` v1.7.0 ist die gemeinsame Basis aller MPunktBPunkt ESP32-Firmwares. Sie übernimmt WLAN-Konfiguration (WiFiManager), periodischen Heartbeat an ioBroker, OTA-Updates und eine Status-Webseite mit Live-Updates. Eigene Sensoren und Logik werden in klar markierten Abschnitten ergänzt — der Rest bleibt unverändert.
 
 ---
 
 ## Features
 
 - **WiFiManager** — Captive Portal `ESP-Hub-Setup`, kein Hardcoding nötig
-- **ESP-Hub Heartbeat** — automatische Registrierung und Online-Status
-- **IO-Werte** — eigene Messwerte im Dashboard (`ios`-Objekt)
-- **OTA** — Push vom Hub oder Drag & Drop im Browser
-- **mDNS** — Erreichbar als `http://<name>.local/`
-- **Name-Sync** — Umbenennung im Hub wird übernommen
+- **ESP-Hub Heartbeat** — automatische Registrierung inkl. `chipModel` und `freeSketch`
+- **IO-Werte** — eigene Messwerte im Hub-Dashboard (`ios`-Objekt)
+- **OTA** — Push vom Hub oder Drag & Drop in der ESP-Web-UI
+- **Web-UI am ESP** — Status + OTA unter `http://<ESP-IP>/` (SSE Live-Updates)
+- **mDNS** — erreichbar als `http://esphub-<mac>.local/`
+- **WLAN-Reset** — BOOT-Taste 3 Sekunden beim Einschalten halten
 
 ---
 
@@ -29,7 +30,7 @@
 
 | Typ | Details |
 |-----|---------|
-| **Board** | ESP32 / ESP8266 |
+| **Board** | ESP32 / ESP32-S3 (auch ESP8266-fähig mit Anpassungen) |
 | **WiFiManager** | tablatronix / tzapu |
 | **ArduinoJson** | bblanchon v6 oder v7 |
 | **ioBroker** | [iobroker.esp-hub](https://github.com/MPunktBPunkt/iobroker.esp-hub) |
@@ -49,6 +50,9 @@
 
 3. Flashen → Hotspot **`ESP-Hub-Setup`** → WLAN + Hub-IP konfigurieren
 4. Gerät erscheint im Dashboard: `http://<ioBroker-IP>:8093`
+5. ESP-Web-UI: `http://<ESP-IP>/`
+
+> **ESP32-S3:** Rechten USB-Port (COM) verwenden, vor dem Flashen kurz RST drücken.
 
 ---
 
@@ -56,11 +60,25 @@
 
 | Abschnitt | Beschreibung | Anpassen? |
 |-----------|--------------|-----------|
-| **KONFIGURATION** | Name, Hub-IP, Intervalle | ✅ |
+| **KONFIGURATION** | Name, Hub-IP, Intervalle, Reset-Taste | ✅ |
 | **EIGENE HARDWARE** | Pin-Definitionen | ✅ |
 | **IO-TABELLE** | Messwerte fürs Dashboard | ✅ |
 | **MESSWERTE EINLESEN** | `updateIoValues()` | ✅ |
-| **AB HIER NICHT VERÄNDERN** | WiFi, Heartbeat, OTA, Loop | ❌ |
+| **AB HIER NICHT VERÄNDERN** | WiFi, Web-UI, Heartbeat, OTA, Loop | ❌ |
+
+---
+
+## Heartbeat-Felder
+
+Der Heartbeat an `POST /api/register` enthält u. a.:
+
+| Feld | Beschreibung |
+|------|--------------|
+| `mac`, `name`, `hwType`, `version`, `ip` | Geräteidentität |
+| `rssi`, `uptime`, `freeHeap` | Laufzeitstatus |
+| `chipModel` | z. B. `ESP32-S3`, `ESP32-D0WDQ6` |
+| `freeSketch` | freier OTA-Flash in Bytes |
+| `ios` | eigene Sensor-/Aktorwerte |
 
 ---
 
