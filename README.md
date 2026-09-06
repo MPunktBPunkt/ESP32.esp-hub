@@ -56,6 +56,17 @@
 
 ---
 
+## Vorkompilierte Firmware
+
+Schema: `{name}.{version}.{family}.bin`
+
+| Datei | Board |
+|-------|-------|
+| `esp-hub-base.1.7.0.esp32.bin` | ESP32 / D1 Mini |
+| `esp-hub-base.1.7.0.esp32s3.bin` | ESP32-S3 |
+
+---
+
 ## Sketch-Struktur
 
 | Abschnitt | Beschreibung | Anpassen? |
