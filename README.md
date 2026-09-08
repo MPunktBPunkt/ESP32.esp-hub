@@ -105,6 +105,16 @@ Portal-Namen der Familie (Beispiele):
 
 ---
 
+## Referenz-Hardware
+
+| ESP32 D1 Mini | | ESP32-S3 | | NodeMCU (ESP8266) | |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| <img src="docs/hardware/esp32-d1-mini-top.jpg" width="220" alt="D1 Mini oben"> | <img src="docs/hardware/esp32-d1-mini-bottom.jpg" width="220" alt="D1 Mini unten"> | <img src="docs/hardware/esp32-s3-top.jpg" width="220" alt="S3 oben"> | <img src="docs/hardware/esp32-s3-bottom.jpg" width="220" alt="S3 unten"> | <img src="docs/hardware/nodemcu-top.jpg" width="220" alt="NodeMCU oben"> | <img src="docs/hardware/nodemcu-bottom.jpg" width="220" alt="NodeMCU unten"> |
+
+*Oben / unten je Board — Referenzfotos aus dem MPunktBPunkt-Labor.*
+
+---
+
 ## Quickstart (Basis)
 
 1. `esp-hub-base.ino` öffnen  
