@@ -52,6 +52,7 @@ Portal-Namen der Familie (Beispiele):
 | esp32.io-control | `ESP-IO-Setup` |
 | esp32.communicator | `ESP-Comm-Setup` |
 | esp32.MeterMaster | `MeterMaster-Setup` |
+| esp32.rfmonitor | `ESP-RFMonitor-Setup` |
 
 > **Hinweis:** `WiFi.begin(ssid, psk, …)` im Communicator nutzt nur die **bereits gespeicherten** NVS-Daten (`WiFi.SSID()` / `WiFi.psk()`), z. B. für BSSID-/Kanalwechsel — keine Klartext-Secrets im Sketch.
 
@@ -68,6 +69,7 @@ Portal-Namen der Familie (Beispiele):
 | **esp32.io-control** | 1.6.1 | GPIO/ADC/DAC/PWM, I2C/SPI, Takt, DMM, Mini-Oszi | [esp32.io-control](https://github.com/MPunktBPunkt/esp32.io-control) |
 | **esp32.communicator** | 1.8.0 | ESP-NOW Messenger, Anrufe, WebRTC-Signaling über Hub | [esp32.communicator](https://github.com/MPunktBPunkt/esp32.communicator) |
 | **esp32.MeterMaster** | 0.4.3 | OLED-Zähleranzeige für MeterMaster + optional Hub-Heartbeat | [esp32.MeterMaster](https://github.com/MPunktBPunkt/esp32.MeterMaster) |
+| **esp32.rfmonitor** | 1.1.0 | WLAN-/BLE-Beobachter, RF-Score, History, Hub-Telemetrie | [esp32.rfmonitor](https://github.com/MPunktBPunkt/esp32.rfmonitor) |
 
 ### Was welches Projekt macht
 
@@ -78,6 +80,7 @@ Portal-Namen der Familie (Beispiele):
 - **esp32.io-control** — Labor-/Werkstatt-IO: Pinout, Modi, Bus-Tools, PWM/CLOCK, Zähler, DMM, ADC-Scope.
 - **esp32.communicator** — Direktfunk per ESP-NOW parallel zu WiFi; Chat-UI; Anruf/WebRTC-Signaling über den Hub.
 - **esp32.MeterMaster** — Kleines OLED für Zählerstände (MeterMaster-Adapter); kann zusätzlich im ESP-Hub erscheinen.
+- **esp32.rfmonitor** — Fester Standort-Monitor: WLAN-/BLE-Scans, RF-Score mit Breakdown, Charts, Events, Hub-Heartbeat.
 
 ---
 
