@@ -1,6 +1,6 @@
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  esp-hub-base.ino — ESP-Hub Standard-Firmware für ESP32     ║
-// ║  Version: 1.7.0                                             ║
+// ║  Version: 1.8.0                                             ║
 // ╠══════════════════════════════════════════════════════════════╣
 // ║  Bibliotheken (Arduino Library Manager):                    ║
 // ║    - WiFiManager  von tablatronix / tzapu                   ║
@@ -17,7 +17,13 @@
 // ╠══════════════════════════════════════════════════════════════╣
 // ║  WLAN zuruecksetzen:                                        ║
 // ║    BOOT-Taste 3s beim Einschalten gedrueckt halten          ║
-// ║  ESP32-S3: Rechten USB-Port + RST vor dem Flashen           ║
+// ║  ESP32-S3: USB-Port "COM" (CH343) + RST vor dem Flashen     ║
+// ║  YD-ESP32-S3 N8R2 (8MB Flash + 2MB Quad-PSRAM):             ║
+// ║    Board ESP32S3 Dev Module | PSRAM: QSPI | Flash: 8MB      ║
+// ║    Partition: Minimal SPIFFS | USB: COM, nicht OTG          ║
+// ║    Hub-FQBN: ...esp32s3:PSRAM=enabled,FlashSize=8M,         ║
+// ║              PartitionScheme=min_spiffs                     ║
+// ║    (OPI PSRAM / qio_opi nur fuer R8/Octal — NICHT N8R2)     ║
 // ╚══════════════════════════════════════════════════════════════╝
 
 #include <Arduino.h>
@@ -36,7 +42,7 @@
 // ================================================================
 
 #define DEVICE_NAME            "Mein ESP32"
-#define FW_VERSION             "1.7.0"
+#define FW_VERSION             "1.8.0"
 #define HUB_HOST               "192.168.178.113"
 #define HUB_PORT               8093
 #define WIFI_AP_NAME           "ESP-Hub-Setup"
@@ -172,6 +178,10 @@ const char PAGE_BODY[] PROGMEM = R"HTML(
       <span id="d-heap">-</span>
       <div class="bar"><div class="bar-fill" id="b-heap"></div></div>
     </td></tr>
+    <tr id="row-psram" style="display:none"><td>PSRAM frei</td><td>
+      <span id="d-psram">-</span>
+      <div class="bar"><div class="bar-fill" id="b-psram"></div></div>
+    </td></tr>
     <tr><td>Freier Flash (OTA)</td><td>
       <span id="d-sketch">-</span>
       <div class="bar"><div class="bar-fill" id="b-sketch"></div></div>
@@ -208,6 +218,14 @@ const char PAGE_SCRIPT2[] PROGMEM = R"HTML(';
   var hp=s.heap||0,hpct=Math.min(100,Math.round(hp/3276));
   document.getElementById('d-heap').textContent=fmtKB(hp);
   var bh=document.getElementById('b-heap');bh.style.width=hpct+'%';bh.className='bar-fill '+barColor(hpct);
+  var rowPs=document.getElementById('row-psram');
+  var psz=s.psramSize||0,psf=s.psram||0;
+  if(psz>0){
+    rowPs.style.display='';
+    var ppct=Math.min(100,Math.round(psf/(psz/100)));
+    document.getElementById('d-psram').textContent=fmtKB(psf)+' / '+fmtKB(psz);
+    var bp=document.getElementById('b-psram');bp.style.width=ppct+'%';bp.className='bar-fill '+barColor(ppct);
+  }else{rowPs.style.display='none';}
   var sk=s.sketch||0,spct=Math.min(100,Math.round(sk/19660));
   document.getElementById('d-sketch').textContent=fmtKB(sk);
   var bs=document.getElementById('b-sketch');bs.style.width=spct+'%';bs.className='bar-fill '+barColor(spct);
@@ -371,6 +389,9 @@ String buildStatusJson() {
     j += ",\"rssi\":" + String(WiFi.RSSI());
     j += ",\"uptime\":\"" + fmtUptime(millis()/1000UL) + "\"";
     j += ",\"heap\":" + String(ESP.getFreeHeap());
+    // PSRAM: 0 wenn Modul fehlt oder Build ohne BOARD_HAS_PSRAM / QSPI
+    j += ",\"psram\":" + String(ESP.getFreePsram());
+    j += ",\"psramSize\":" + String(ESP.getPsramSize());
     j += ",\"sketch\":" + String(ESP.getFreeSketchSpace());
     j += ",\"hub\":\"" + hubHost + ":" + String(hubPort) + "\"";
     j += ",\"interval\":" + String(heartbeatInterval/1000);
@@ -512,6 +533,9 @@ String buildHeartbeat() {
     doc["uptime"]     = millis() / 1000UL;
     doc["freeHeap"]   = ESP.getFreeHeap();
     doc["freeSketch"] = ESP.getFreeSketchSpace();
+    // Additive Felder — aeltere Hub-Versionen ignorieren sie
+    doc["freePsram"]  = ESP.getFreePsram();
+    doc["psramSize"]  = ESP.getPsramSize();
     JsonObject ios = doc["ios"].to<JsonObject>();
     for (int i = 0; i < IO_COUNT; i++) {
         JsonObject io = ios[ioTable[i].key].to<JsonObject>();
@@ -615,6 +639,17 @@ void setup() {
     Serial.begin(115200);
     delay(500);
     Serial.println("\n=== ESP-Hub v" FW_VERSION " ===");
+    Serial.printf("[HW] Chip=%s Rev%d Cores=%d Flash=%u KB\n",
+                  ESP.getChipModel(), ESP.getChipRevision(),
+                  ESP.getChipCores(), ESP.getFlashChipSize() / 1024U);
+    // N8R2: erwartet ~2048 KB wenn Build PSRAM=QSPI + BOARD_HAS_PSRAM
+    size_t psram = ESP.getPsramSize();
+    if (psram > 0) {
+        Serial.printf("[HW] PSRAM=%u KB frei=%u KB\n",
+                      psram / 1024U, ESP.getFreePsram() / 1024U);
+    } else {
+        Serial.println("[HW] PSRAM=0 (Modul fehlt oder Build ohne QSPI PSRAM)");
+    }
     checkResetButton();
     setupWifi();
     String mdns = "esphub-" + getMac().substring(6);

@@ -1,6 +1,6 @@
 # ESP32.esp-hub — Basis-Firmware & Projektübersicht
 
-![Version](https://img.shields.io/badge/version-1.7.0-blue)
+![Version](https://img.shields.io/badge/version-1.8.0-blue)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-00457C.svg?logo=paypal)](https://www.paypal.com/donate/?business=martin%40bchmnn.de&currency_code=EUR)
 
@@ -10,7 +10,7 @@
 
 ## Überblick
 
-`esp-hub-base` **v1.7.0** ist die gemeinsame Grundlage aller Firmwares in dieser Familie. Sie übernimmt:
+`esp-hub-base` **v1.8.0** ist die gemeinsame Grundlage aller Firmwares in dieser Familie. Sie übernimmt:
 
 - WLAN über **WiFiManager** (Captive Portal, keine Zugangsdaten im Quellcode)
 - periodischen **Heartbeat** an den ioBroker-ESP-Hub
@@ -53,6 +53,7 @@ Portal-Namen der Familie (Beispiele):
 | esp32.communicator | `ESP-Comm-Setup` |
 | esp32.MeterMaster | `MeterMaster-Setup` |
 | esp32.rfmonitor | `ESP-RFMonitor-Setup` |
+| esp32.heartrate | `ESP-HR-Setup` |
 
 > **Hinweis:** `WiFi.begin(ssid, psk, …)` im Communicator nutzt nur die **bereits gespeicherten** NVS-Daten (`WiFi.SSID()` / `WiFi.psk()`), z. B. für BSSID-/Kanalwechsel — keine Klartext-Secrets im Sketch.
 
@@ -62,7 +63,7 @@ Portal-Namen der Familie (Beispiele):
 
 | Projekt | Version | Kurzbeschreibung | Repo |
 |---------|---------|------------------|------|
-| **ESP32.esp-hub** (diese Basis) | 1.7.0 | Heartbeat, OTA, Status-UI, Vorlage für neue Nodes | [ESP32.esp-hub](https://github.com/MPunktBPunkt/ESP32.esp-hub) |
+| **ESP32.esp-hub** (diese Basis) | 1.8.0 | Heartbeat, OTA, Status-UI, Vorlage für neue Nodes | [ESP32.esp-hub](https://github.com/MPunktBPunkt/ESP32.esp-hub) |
 | **iobroker.esp-hub** | 0.5.8 | ioBroker-Adapter: Geräte, OTA, USB-Flash, Compiler, Monitor | [iobroker.esp-hub](https://github.com/MPunktBPunkt/iobroker.esp-hub) |
 | **esp32.network** | 1.6.6 | LAN-Scanner, Inventar, optional FritzBox TR-064 | [esp32.network](https://github.com/MPunktBPunkt/esp32.network) |
 | **esp32.webradio** | 2.4.0 | Internet-Radio/Podcasts im Browser, radio-browser, Favoriten | [esp32.webradio](https://github.com/MPunktBPunkt/esp32.webradio) |
@@ -70,6 +71,7 @@ Portal-Namen der Familie (Beispiele):
 | **esp32.communicator** | 1.8.0 | ESP-NOW Messenger, Anrufe, WebRTC-Signaling über Hub | [esp32.communicator](https://github.com/MPunktBPunkt/esp32.communicator) |
 | **esp32.MeterMaster** | 0.4.3 | OLED-Zähleranzeige für MeterMaster + optional Hub-Heartbeat | [esp32.MeterMaster](https://github.com/MPunktBPunkt/esp32.MeterMaster) |
 | **esp32.rfmonitor** | 1.1.0 | WLAN-/BLE-Beobachter, RF-Score, History, Hub-Telemetrie | [esp32.rfmonitor](https://github.com/MPunktBPunkt/esp32.rfmonitor) |
+| **esp32.heartrate** | 0.2.16 | BLE-HF-Gateway (Polar H9), Sessions, Export, Hub | [esp32.heartrate](https://github.com/MPunktBPunkt/esp32.heartrate) |
 
 ### Was welches Projekt macht
 
@@ -81,18 +83,20 @@ Portal-Namen der Familie (Beispiele):
 - **esp32.communicator** — Direktfunk per ESP-NOW parallel zu WiFi; Chat-UI; Anruf/WebRTC-Signaling über den Hub.
 - **esp32.MeterMaster** — Kleines OLED für Zählerstände (MeterMaster-Adapter); kann zusätzlich im ESP-Hub erscheinen.
 - **esp32.rfmonitor** — Fester Standort-Monitor: WLAN-/BLE-Scans, RF-Score mit Breakdown, Charts, Events, Hub-Heartbeat.
+- **esp32.heartrate** — Brustgurt/BLE-HR: Live-Charts, Session-Archiv, Continuity, JSON/CSV-Export inkl. Hub-Ablage.
 
 ---
 
 ## Features der Basis (`esp-hub-base`)
 
 - **WiFiManager** — Captive Portal `ESP-Hub-Setup`
-- **ESP-Hub Heartbeat** — Registrierung inkl. `chipModel`, `freeSketch`, `ios`
+- **ESP-Hub Heartbeat** — Registrierung inkl. `chipModel`, `freeSketch`, optional `freePsram`/`psramSize`, `ios`
 - **IO-Werte** — eigene Messwerte im Hub-Dashboard
 - **OTA** — Hub-Push oder Drag & Drop in der ESP-Web-UI
-- **Web-UI** — Status + OTA unter `http://<ESP-IP>/` (SSE)
+- **Web-UI** — Status + OTA unter `http://<ESP-IP>/` (SSE); PSRAM-Anzeige wenn aktiv
 - **mDNS** — typisch `http://esphub-<mac6>.local/`
 - **WLAN-Reset** — BOOT 3 s beim Einschalten
+- **PSRAM** — Boot-Log + Telemetrie; Aktivierung nur über Board/FQBN (N8R2: QSPI)
 
 ---
 
@@ -105,6 +109,23 @@ Portal-Namen der Familie (Beispiele):
 | **WiFiManager** | tablatronix / tzapu |
 | **ArduinoJson** | bblanchon v6 oder v7 |
 | **ioBroker** | [iobroker.esp-hub](https://github.com/MPunktBPunkt/iobroker.esp-hub) |
+
+### YD-ESP32-S3 N8R2 (2022-V1.4, Dual-USB-C)
+
+Labor-Referenz (technology-audit / hu-probe): **8 MiB Quad-Flash + 2 MiB Quad-PSRAM**. PSRAM ist **nicht** automatisch aktiv — Build muss `BOARD_HAS_PSRAM` + **QSPI** setzen. **OPI/Octal** nur für R8-Module, nicht für N8R2.
+
+| Einstellung | Wert |
+|-------------|------|
+| Board (Arduino) | ESP32S3 Dev Module |
+| PSRAM | **QSPI PSRAM** (`PSRAM=enabled`) — nicht OPI |
+| Flash Size | **8MB** |
+| Partition | **Minimal SPIFFS** |
+| Upload/Monitor | USB-Port **COM** (CH343); Port **USB** = OTG — bei Netzteil am COM den OTG-Port offen lassen |
+| Hub-FQBN | `esp32:esp32:esp32s3:PSRAM=enabled,FlashSize=8M,PartitionScheme=min_spiffs` |
+
+Nach dem Flash: Seriell `[HW] PSRAM=2048 KB …` bzw. Web-UI „PSRAM frei“. `PSRAM=0` → Build ohne QSPI oder falsches Modul.
+
+Abgeleitete Nodes: große Puffer (`ps_malloc` / `heap_caps_malloc(…, MALLOC_CAP_SPIRAM)`) in PSRAM; JSON/Strings und DMA weiter im internen RAM.
 
 ---
 
@@ -144,8 +165,8 @@ Schema: `{name}.{version}.{family}.bin`
 
 | Datei | Board |
 |-------|-------|
-| `esp-hub-base.1.7.0.esp32.bin` | ESP32 / D1 Mini |
-| `esp-hub-base.1.7.0.esp32s3.bin` | ESP32-S3 |
+| `esp-hub-base.1.8.0.esp32.bin` | ESP32 / D1 Mini |
+| `esp-hub-base.1.8.0.esp32s3.bin` | ESP32-S3 (für N8R2: mit QSPI-PSRAM + 8MB neu bauen) |
 
 Gleiche Namenskonvention gilt für die abgeleiteten Repos und die Ablage unter `iobroker.esp-hub/firmware/`.
 
@@ -168,9 +189,10 @@ Gleiche Namenskonvention gilt für die abgeleiteten Repos und die Ablage unter `
 | Feld | Beschreibung |
 |------|--------------|
 | `mac`, `name`, `hwType`, `version`, `ip` | Identität |
-| `rssi`, `uptime`, `freeHeap` | Laufzeit |
+| `rssi`, `uptime`, `freeHeap` | Laufzeit (`freeHeap` = interner DRAM) |
 | `chipModel` | z. B. `ESP32-S3`, `ESP32-D0WDQ6` |
 | `freeSketch` | freier OTA-Flash (Bytes) |
+| `freePsram`, `psramSize` | optional (ab 1.8.0); `0` ohne PSRAM-Build |
 | `ios` | Sensor-/Aktorwerte als Objekt |
 
 Antwort u. a.: gewünschtes Heartbeat-Intervall, optionale `otaUrl` für Push-Updates.
