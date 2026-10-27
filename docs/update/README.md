@@ -20,12 +20,14 @@ Dieses Verzeichnis hält den Umbau von `esp-hub-base` zur modularen Basisplattfo
 | [M9_OTA_LIFECYCLE.md](M9_OTA_LIFECYCLE.md) | OTA States/Progress (Hub + Web) |
 | [M10_BASEMODULE.md](M10_BASEMODULE.md) | BaseModule / ModuleManager Contract |
 | [M11_CLEANUP.md](M11_CLEANUP.md) | Cleanup; Legacy-WDT bewusst behalten |
+| [ROLLOUT_DERIVED.md](ROLLOUT_DERIVED.md) | Abgeleitete Firmwares auf den Core bringen |
+| [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) | Feld-Regression (Stand 1.10.4 weitgehend PASS) |
 
 ## Aktueller Stand
 
 - **Baseline-Verträge:** eingefroren gegen **v1.8.0**
-- **Code:** `esp-hub-base/` FW **v1.10.4** (M0–M11; OTA-Lifecycle, BaseModule; Legacy-WDT bleibt; WDT-millis-Fix)
-- **Phase:** M11 fertig — Migration M0–M11 abgeschlossen (Device-Verification offen)
+- **Code:** `esp-hub-base/` FW **v1.10.4** (M0–M11 abgeschlossen)
+- **Phase:** Rollout abgeleiteter Firmwares — zuerst **esp32.rfmonitor** (Stufe A/B)
 - **Regel:** Bestehende Hub-/OTA-/Status-Verträge bleiben bis zur bewussten Erweiterung kompatibel
 
 ## Leitplanken (Kurz)

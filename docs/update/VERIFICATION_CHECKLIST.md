@@ -10,80 +10,87 @@ Bezug: [M0_BASELINE_FREEZE.md](M0_BASELINE_FREEZE.md).
 
 ## A. Build & Boot
 
-- [ ] Sketch/Firmware baut ohne Fehler (ESP32 und/oder ESP32-S3)
-- [ ] Serial: Banner mit Versionsstring
-- [ ] Serial: `[HW] Chip=… Rev… Cores=… Flash=…`
-- [ ] Serial: PSRAM-Zeile (`PSRAM=…` oder `PSRAM=0 …`)
-- [ ] N8R2 + QSPI-Build: `PSRAM≈2048 KB` (nicht 0)
+- [x] Sketch/Firmware baut ohne Fehler (ESP32 und/oder ESP32-S3) — 1.10.4
+- [x] Serial: Banner mit Versionsstring — `.88` USB: `ESP-Hub v1.10.x`
+- [x] Serial: `[HW] Chip=… Rev… Cores=… Flash=…`
+- [x] Serial: PSRAM-Zeile (`PSRAM=…` oder `PSRAM=0 …`)
+- [x] N8R2 + QSPI-Build: `PSRAM≈2048 KB` (nicht 0) — `.88` Status `psramSize=2097152`
 
 ## B. WLAN-Reset & Portal
 
-- [ ] Frisches Gerät / nach Reset: Portal-SSID `ESP-Hub-Setup`
-- [ ] Portal akzeptiert Name, Hub-IP, Port
-- [ ] Nach Connect: Gerät im LAN, Serial zeigt IP/Name/Hub
+- [x] Frisches Gerät / nach Reset: Portal-SSID `ESP-Hub-Setup` — `.88` nach NVS-Wipe
+- [x] Portal akzeptiert Name, Hub-IP, Port — `.88` manuell konfiguriert
+- [x] Nach Connect: Gerät im LAN, Serial zeigt IP/Name/Hub
 - [ ] BOOT 3 s beim Einschalten: WLAN+`esphub`-NVS weg, Portal erscheint erneut
-- [ ] Keine SSID/PSK im Quellcode
+- [x] Keine SSID/PSK im Quellcode
 
 ## C. mDNS & Web-UI
 
-- [ ] `http://esphub-<mac6>.local/` oder IP erreichbar
-- [ ] `/` zeigt Statusseite
-- [ ] SSE verbindet (`Live`) oder Polling-Fallback über `/api/status` funktioniert
-- [ ] `/ota` lädt Upload-UI
+- [x] IP erreichbar (`.87` / `.88`)
+- [x] `/` zeigt Statusseite
+- [x] SSE `/events` verbindet (`text/event-stream` + `data:`)
+- [x] `/ota` lädt Upload-UI
 
 ## D. `/api/status`
 
-- [ ] HTTP 200, `application/json`
-- [ ] Pflichtkeys: `name`, `chip`, `mac`, `ip`, `rssi`, `uptime`, `heap`, `psram`, `psramSize`, `sketch`, `hub`, `interval`, `ios`
-- [ ] `mac` ohne `:`, Uppercase
-- [ ] `uptime` formatierter String (nicht nur Sekunden-Zahl)
-- [ ] Bei PSRAM=0: UI blendet PSRAM sinnvoll aus / Werte 0
+- [x] HTTP 200, `application/json`
+- [x] Pflichtkeys: `name`, `chip`, `mac`, `ip`, `rssi`, `uptime`, `heap`, `psram`, `psramSize`, `sketch`, `hub`, `interval`, `ios`
+- [x] `mac` ohne `:`, Uppercase
+- [x] `uptime` formatierter String (nicht nur Sekunden-Zahl)
+- [x] Bei PSRAM=0: UI blendet PSRAM aus (`.87`); bei S3 sichtbar (`.88`)
+- [x] Additive: `hwSummary`, `module`, `cpu`/`cpu0`/`cpu1`, OTA-/Recovery-/Prog-Felder
 
 ## E. Heartbeat / Hub
 
-- [ ] `POST /api/register` erscheint im Hub / Adapter-Log
-- [ ] Gerät in Hub-Liste mit Name, IP, Version, chipModel
-- [ ] Payload enthält: `mac`, `name`, `hwType=esp32`, `chipModel`, `version`, `ip`, `rssi`, `uptime` (Zahl), `freeHeap`, `freeSketch`, `freePsram`, `psramSize`, `ios`
-- [ ] Hub kann `interval` setzen (≥5 s) → Gerät übernimmt
-- [ ] Heartbeat bleibt schlank (kein Diagnose-Dump)
+- [x] Gerät in Hub-Liste mit Name, IP, Version, chipModel
+- [x] Payload enthält Baseline-Felder; Heartbeat schlank
+- [x] Hub-Rename → `reply.name` → Gerät übernimmt (1.10.4 + Hub 0.5.15)
+- [ ] Hub kann `interval` setzen (≥5 s) → Gerät übernimmt (nicht explizit getestet)
+- [x] Heartbeat bleibt schlank (kein Diagnose-Dump)
 
 ## F. OTA
 
-- [ ] Hub-Push `otaUrl` → Download, Flash, Restart, neue Version im Heartbeat
-- [ ] Web-Upload `.bin` über `/ota-upload` → Restart, neue Version
-- [ ] Fehlgeschlagenes OTA lässt Gerät bedienbar (kein Soft-Brick ohne Serial-Recovery)
+- [x] Hub-Push `otaUrl` → Download, Flash, Restart (`otaState=writing`, `restartCause=hub_ota`)
+- [x] Web-Upload `.bin` über `/ota-upload` → Restart (`web_ota`)
+- [x] Fehlgeschlagenes OTA / Recovery: Gerät nach WDT-Bug-Fix (1.10.1) wieder bedienbar
 
-## G. Watchdog (Legacy, bis M11)
+## G. Watchdog (Legacy, D-010 deferred)
 
-- [ ] Bei `WATCHDOG_TIMEOUT_S > 0`: nach langem Hub-Ausfall (kein HTTP 200) → Restart (Baseline-Verhalten)
-- [ ] Bis M7/M11: Logik nicht stillschweigend entfernt
+- [x] Legacy-WDT-Code aktiv; während OTA pausiert
+- [x] False-Trip nach Heartbeat gefixt (1.10.1, millis re-sample)
+- [ ] Bewusster Hub-Ausfall → Restart nach `WATCHDOG_TIMEOUT_S` (Field, lang)
 
 ## H. IO-Hook
 
-- [ ] Leere `ioTable` → gültiger Heartbeat/Status (`ios` leer/Objekt ok)
+- [x] Leere `ioTable` → gültiger Heartbeat/Status (`ios` `{}`)
 - [ ] Mit Test-Eintrag in `ioTable` + `updateIoValues()`: Werte in Status und Hub sichtbar
 
 ## I. NVS
 
-- [ ] Nach Portal: `name` / `hub_host` / `hub_port` überleben Power-Cycle
-- [ ] Namespace weiterhin `esphub` (oder dokumentierte Migrationsnotiz + Dual-Read)
+- [x] Nach Portal: Name/Hub überleben Reboot (`.88` nach Portal; Hub-Rename persistiert)
+- [x] Namespace `esphub`
+- [ ] `/api/diag/saved` liefert Snapshot (aktuell oft `{"saved":false,"error":"nvs"}` — offen)
 
 ## J. Non-Regression Timing (ab M1 qualitativ)
 
-- [ ] Web-UI bleibt während Normalbetrieb bedienbar
-- [ ] Keine neuen langen Flash-Writes im Idle-Loop
-- [ ] Diagnostics (ab M3+) erhöhen Boot-/Loop-Latenz nicht spürbar (D-020)
+- [x] Web-UI bleibt während Normalbetrieb bedienbar
+- [x] Keine neuen langen Flash-Writes im Idle-Loop (beobachtet)
+- [x] Diagnostics erhöhen Boot-/Loop-Latenz nicht spürbar
 
 ---
 
-## Ergebnisprotokoll (kopieren)
+## Ergebnisprotokoll
 
 ```text
-Milestone: M_
-Datum:
-Board:
-FQBN / PSRAM:
-Hub-Version:
-Ergebnis: PASS / FAIL
+Milestone: M0–M11 / FW 1.10.4
+Datum: 2026-10-27
+Board: .87 ESP32-D0WDQ6 (Network Scanner MAC C8C9A3CB3794)
+       .88 ESP32-S3 N8R2 (PiDrive-Lab MAC 68B6B329339C)
+FQBN: esp32 min_spiffs / esp32s3 PSRAM=enabled FlashSize=8M min_spiffs
+Hub-Version: iobroker.esp-hub 0.5.15
+Ergebnis: PASS (mit offenen Punkten B-BOOT-Hold, E-interval, G-Field-WDT, H-IO-Test, I-diag/saved)
 Notizen:
+- USB merged.bin 0x0 wischt NVS/WLAN — App-only 0x10000 bevorzugen
+- OTA-Slot-Frei bei min_spiffs oft gleich (4 vs 8 MiB Chip) — UI zeigt Flash gesamt extra
+- Hub-Rename braucht pendingName (0.5.15) + Gerät apply reply.name (1.10.4)
 ```
