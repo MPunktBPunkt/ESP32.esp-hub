@@ -272,6 +272,7 @@ size_t HardwareInfo::freePsram() const { return ESP.getFreePsram(); }
 uint32_t HardwareInfo::freeHeap() const { return ESP.getFreeHeap(); }
 uint32_t HardwareInfo::maxAllocHeap() const { return ESP.getMaxAllocHeap(); }
 uint32_t HardwareInfo::freeSketchSpace() const { return ESP.getFreeSketchSpace(); }
+uint32_t HardwareInfo::sketchSize() const { return ESP.getSketchSize(); }
 
 void HardwareInfo::appendStatusFields(String& json) const {
     // Additive keys only — do not rename baseline fields.
@@ -281,6 +282,9 @@ void HardwareInfo::appendStatusFields(String& json) const {
     json += ",\"hasPsram\":";
     json += hasPsram() ? "true" : "false";
     json += ",\"heapMax\":" + String(maxAllocHeap());
+    json += ",\"sketchUsed\":" + String(sketchSize());
+    // OTA free (baseline key `sketch`) is the other app slot — often same size on
+    // min_spiffs for 4 MiB and 8 MiB; flashKb/flashRealMb show the real chip size.
     if (module_[0]) {
         json += ",\"module\":\"";
         json += module_;

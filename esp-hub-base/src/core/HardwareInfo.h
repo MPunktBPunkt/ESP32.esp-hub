@@ -48,6 +48,8 @@ public:
     uint32_t freeHeap() const;
     uint32_t maxAllocHeap() const;
     uint32_t freeSketchSpace() const;
+    /** @brief Bytes occupied by the running firmware image. */
+    uint32_t sketchSize() const;
 
     /**
      * @brief Human-readable one-liner (hu-probe style), with live heap figures.

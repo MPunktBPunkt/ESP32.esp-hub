@@ -9,6 +9,7 @@
 #include "AppCore.h"
 #include "BootContext.h"
 #include "Checkpoint.h"
+#include "CpuLoad.h"
 #include "DiagLog.h"
 #include "DiagSaved.h"
 #include "PanicTail.h"
@@ -25,6 +26,7 @@ void AppCore::begin() {
 
     BootContext::begin();
     ProgressWatch::begin();
+    CpuLoad::begin();
 
     hw_.probe();
     hw_.logToSerial();
@@ -128,5 +130,6 @@ void AppCore::loop() {
 #endif
 
     net_.maintain();
+    CpuLoad::poll();
     delay(10);
 }

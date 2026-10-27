@@ -9,6 +9,7 @@
 #include "WebUi.h"
 #include "IoTypes.h"
 #include "Checkpoint.h"
+#include "CpuLoad.h"
 #include "DiagLog.h"
 #include "DiagSaved.h"
 #include "ModuleManager.h"
@@ -74,7 +75,13 @@ static const char PAGE_BODY[] PROGMEM = R"HTML(
     <tr><td>Uptime</td><td id="d-uptime">-</td></tr>
     <tr><td>Firmware</td><td id="d-ver">-</td></tr>
   </table></div>
-  <div class="card"><h3>Speicher</h3><table>
+  <div class="card"><h3>Speicher &amp; CPU</h3><table>
+    <tr><td>Flash gesamt</td><td id="d-flash">-</td></tr>
+    <tr><td>Firmware belegt</td><td id="d-sketch-used">-</td></tr>
+    <tr><td>OTA-Slot frei</td><td>
+      <span id="d-sketch">-</span>
+      <div class="bar"><div class="bar-fill" id="b-sketch"></div></div>
+    </td></tr>
     <tr><td>Freier RAM</td><td>
       <span id="d-heap">-</span>
       <div class="bar"><div class="bar-fill" id="b-heap"></div></div>
@@ -83,10 +90,7 @@ static const char PAGE_BODY[] PROGMEM = R"HTML(
       <span id="d-psram">-</span>
       <div class="bar"><div class="bar-fill" id="b-psram"></div></div>
     </td></tr>
-    <tr><td>Freier Flash (OTA)</td><td>
-      <span id="d-sketch">-</span>
-      <div class="bar"><div class="bar-fill" id="b-sketch"></div></div>
-    </td></tr>
+    <tr><td>CPU-Last</td><td id="d-cpu">-</td></tr>
   </table></div>
   <div class="card" id="io-card" style="display:none">
     <h3>IO-Werte</h3>
@@ -116,6 +120,15 @@ static const char PAGE_SCRIPT[] PROGMEM = R"HTML(';
 static const char PAGE_SCRIPT2[] PROGMEM = R"HTML(';
   document.getElementById('d-hub').textContent=s.hub||'';
   document.getElementById('d-interval').textContent='alle '+(s.interval||30)+' Sekunden';
+  var flashKb=s.flashKb||0, flashReal=s.flashRealMb||0;
+  document.getElementById('d-flash').textContent=
+    (flashReal?flashReal+' MiB':'?')+(flashKb?(' (Build '+Math.round(flashKb/1024)+' MiB)'):'');
+  var used=s.sketchUsed||0;
+  document.getElementById('d-sketch-used').textContent=fmtKB(used);
+  var sk=s.sketch||0, slot=used+sk;
+  var spct=slot>0?Math.min(100,Math.round(sk*100/slot)):0;
+  document.getElementById('d-sketch').textContent=fmtKB(sk)+(slot?(' / '+fmtKB(slot)):'');
+  var bs=document.getElementById('b-sketch');bs.style.width=spct+'%';bs.className='bar-fill '+barColor(spct);
   var hp=s.heap||0,hpct=Math.min(100,Math.round(hp/3276));
   document.getElementById('d-heap').textContent=fmtKB(hp);
   var bh=document.getElementById('b-heap');bh.style.width=hpct+'%';bh.className='bar-fill '+barColor(hpct);
@@ -127,9 +140,14 @@ static const char PAGE_SCRIPT2[] PROGMEM = R"HTML(';
     document.getElementById('d-psram').textContent=fmtKB(psf)+' / '+fmtKB(psz);
     var bp=document.getElementById('b-psram');bp.style.width=ppct+'%';bp.className='bar-fill '+barColor(ppct);
   }else{rowPs.style.display='none';}
-  var sk=s.sketch||0,spct=Math.min(100,Math.round(sk/19660));
-  document.getElementById('d-sketch').textContent=fmtKB(sk);
-  var bs=document.getElementById('b-sketch');bs.style.width=spct+'%';bs.className='bar-fill '+barColor(spct);
+  var c0=s.cpu0, c1=s.cpu1, cav=s.cpu;
+  var cpuTxt=(typeof cav==='number'?cav+'%':'—');
+  if(typeof c0==='number'&&typeof c1==='number'){
+    cpuTxt='Ø '+cav+'% (CPU0 '+c0+'% · CPU1 '+c1+'%)';
+  }else if(typeof c0==='number'){
+    cpuTxt=c0+'%';
+  }
+  document.getElementById('d-cpu').textContent=cpuTxt;
   var ios=s.ios||{},keys=Object.keys(ios);
   var card=document.getElementById('io-card'),grid=document.getElementById('io-grid');
   if(keys.length>0){
@@ -342,6 +360,7 @@ String WebUi::buildStatusJson() const {
     DiagLog::appendStatusFields(j);
     ProgressWatch::appendStatusFields(j);
     Recovery::appendStatusFields(j);
+    CpuLoad::appendStatusFields(j);
     if (ota_) ota_->appendStatusFields(j);
     if (modules_) modules_->appendStatusJson(j);
     j += ",\"ios\":" + ios + "}";
