@@ -9,6 +9,7 @@
 #include "AppCore.h"
 #include "BootContext.h"
 #include "Checkpoint.h"
+#include "DiagLog.h"
 #include "DiagSaved.h"
 #include "PanicTail.h"
 
@@ -24,8 +25,9 @@ void AppCore::begin() {
 
     hw_.probe();
     hw_.logToSerial();
-    // Safe Point: persist boot/checkpoint snapshot for /api/diag/saved (D-013).
+    // Safe Point: structured diag snapshot + text log snapshot (D-008/D-013).
     DiagSaved::persistBootSnapshot(&hw_);
+    DiagLog::persist("hw", false);
     hub_.setHardware(&hw_);
     web_.setHardware(&hw_);
 

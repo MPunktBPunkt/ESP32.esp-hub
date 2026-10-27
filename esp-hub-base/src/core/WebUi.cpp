@@ -9,6 +9,7 @@
 #include "WebUi.h"
 #include "IoTypes.h"
 #include "Checkpoint.h"
+#include "DiagLog.h"
 #include "DiagSaved.h"
 #include "PanicTail.h"
 
@@ -272,6 +273,10 @@ void WebUi::registerRoutes() {
         webServer_.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
         webServer_.send(200, F("application/json"), DiagSaved::loadJson());
     });
+    webServer_.on("/api/diag/log", HTTP_GET, [this]() {
+        webServer_.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
+        webServer_.send(200, F("application/json"), DiagLog::buildLogJson());
+    });
     webServer_.on("/ota", HTTP_GET, [this]() { handleOtaPage(); });
     webServer_.on("/ota-upload", HTTP_POST,
                   [this]() { handleOtaUploadFinish(); },
@@ -318,6 +323,7 @@ String WebUi::buildStatusJson() const {
     if (hw_) hw_->appendStatusFields(j);
     PanicTail::appendStatusFields(j);
     Checkpoint::appendStatusFields(j);
+    DiagLog::appendStatusFields(j);
     j += ",\"ios\":" + ios + "}";
     return j;
 }

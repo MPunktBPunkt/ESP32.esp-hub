@@ -8,6 +8,7 @@
 
 #include "PanicTail.h"
 #include "Checkpoint.h"
+#include "DiagLog.h"
 
 #include <esp_attr.h>
 #include <esp_system.h>
@@ -139,6 +140,8 @@ void PanicTail::breadcrumb(Code code, uint32_t arg) {
     crumb.repeat = 0;
     retained.next = (slot + 1) % kCapacity;
     if (retained.count < kCapacity) retained.count++;
+    // Mirror new crumbs into DiagLog (folded repeats stay quiet).
+    DiagLog::printf("[BC] %s arg=%lu\n", crumbName(code), (unsigned long)arg);
 }
 
 void PanicTail::noteRestart(RestartCause cause) {
@@ -146,6 +149,7 @@ void PanicTail::noteRestart(RestartCause cause) {
     breadcrumb(RestartRequested, cause);
     // Planned restart must not look like a hung open checkpoint.
     Checkpoint::clearOpenForPlannedRestart();
+    DiagLog::persist("restart", true);
 }
 
 void PanicTail::requestRestart(RestartCause cause) {

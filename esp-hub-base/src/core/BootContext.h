@@ -8,20 +8,23 @@
  * https://github.com/MPunktBPunkt/ESP32.esp-hub
  */
 
+#include "DiagLog.h"
 #include "PanicTail.h"
 #include "Checkpoint.h"
 
 /**
- * @brief Boot-facing facade over PanicTail and Checkpoint (D-003/D-006/D-009).
+ * @brief Boot-facing facade over DiagLog, PanicTail and Checkpoint (D-003/D-006/D-007/D-009).
  *
- * Call order: PanicTail (reset/trail) then Checkpoint (last-open latch).
+ * Call order: DiagLog → PanicTail → Checkpoint, then a forced boot snapshot.
  */
 namespace BootContext {
-/** @brief Start PanicTail and Checkpoint and print the boot summary. */
+/** @brief Start diagnostic layers and print the boot summary. */
 inline void begin() {
+    DiagLog::begin();
     PanicTail::begin();
     PanicTail::logToSerial();
     Checkpoint::begin();
     Checkpoint::logToSerial();
+    DiagLog::persist("boot", true);
 }
 }  // namespace BootContext

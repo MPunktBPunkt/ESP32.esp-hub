@@ -8,7 +8,7 @@
 
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  esp-hub-base.ino — ESP-Hub Standard-Firmware für ESP32     ║
-// ║  Version: 1.9.4                                             ║
+// ║  Version: 1.9.5                                             ║
 // ╠══════════════════════════════════════════════════════════════╣
 // ║  Bibliotheken (Arduino Library Manager):                    ║
 // ║    - WiFiManager  von tablatronix / tzapu                   ║

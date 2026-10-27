@@ -10,8 +10,8 @@ M2  Hardware Capabilities                 ✓ (1.9.1; Device-Checkliste offen)
 M3  BootContext / PanicTail               ✓ (1.9.2; Device-Checkliste offen)
 M4  Checkpoint                            ✓ (1.9.3; Device-Checkliste offen)
 M5  Status / Diagnostics API              ✓ (1.9.4; Doxygen + /api/diag/saved)
-M6  Breadcrumb + DiagLog                  ← als Nächstes
-M7  ProgressWatch parallel zum alten WDT
+M6  Breadcrumb + DiagLog                  ✓ (1.9.5; RAM/RTC/NVS)
+M7  ProgressWatch parallel                ← als Nächstes zum alten WDT
 M8  Recovery
 M9  OTA Lifecycle
 M10 BaseModule / Application Contract
@@ -106,6 +106,8 @@ M11 Cleanup / Removal of legacy paths
 ## M6 — Breadcrumb + DiagLog
 
 **Ziel:** Breadcrumb-Trail + DiagLog mit Ebenen RAM / RTC Tail / Flash Snapshot (D-007, D-008).
+
+**Ist:** siehe [M6_DIAGLOG.md](M6_DIAGLOG.md) — `DiagLog` + `/api/diag/log`; Breadcrumbs via PanicTail.
 
 **Acceptance:** Flash-Writes nur an Safe Points; Loop-Timing nicht messbar verschlechtert (D-020).
 
