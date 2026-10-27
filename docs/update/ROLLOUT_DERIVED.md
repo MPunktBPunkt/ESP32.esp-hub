@@ -7,9 +7,10 @@
 
 1. **esp32.rfmonitor** — **1.10.5** Stufe A/B validiert: `src/esphub/` (HardwareInfo, CpuLoad), Hub-Rename, `web/index.html` → gzip-PROGMEM — Labor `.87`/`.88`
 2. **esp32.network** — **1.7.0** Stufe A/B validiert: Arduino-Monolith + `src/esphub/`, `web/*.html` → gzip — Labor `.87` Smoke OK (`.88` bleibt rfmonitor)
-3. **esp32.io-control** — **1.7.0** Stufe A/B: Shared Core + gzip-UI (Build ESP32/S3 OK)
-4. **esp32.webradio** — **2.5.0** Stufe A/B: Shared Core + gzip-UI (B64-UI → `web/`), Hub-Rename ergänzt
-5. Weitere (communicator, …) nach gleichem Muster
+3. **esp32.io-control** — **1.7.0** Stufe A/B: Labor `.87` Smoke OK
+4. **esp32.webradio** — **2.5.0** Stufe A/B: Labor `.88` Smoke OK
+5. **esp32.communicator** — **1.9.0** Stufe A/B: Shared Core + gzip-UI (login/main/ota)
+6. Weitere (heartrate, MeterMaster, ftmsprobe, …) nach gleichem Muster
 
 ## Strategie (inkrementell)
 
@@ -54,7 +55,7 @@ Nicht sofort alles auf `AppCore`+Stock-WebUi zwingen (RF/Network haben eigene UI
 - [x] Web-/Hub-OTA-Pfade; UI gzip (`web/index.html`+`ota.html`)
 - [x] `hwSummary` / CPU / Flash in Status + Heartbeat
 - [x] Bins `io-control.1.7.0.esp32.bin` / `.esp32s3.bin`
-- [ ] Labor-Flash (kein freies Lab-Board — nachholen)
+- [x] Labor-Flash/Smoke `.87` (gzip, hwSummary/CPU)
 
 ### esp32.webradio 2.5.0 (2026-10-27)
 
@@ -62,7 +63,15 @@ Nicht sofort alles auf `AppCore`+Stock-WebUi zwingen (RF/Network haben eigene UI
 - [x] Web-/Hub-OTA; UI von B64-PROGMEM → `web/*.html` gzip
 - [x] `hwSummary` / CPU / Flash in Status + Heartbeat
 - [x] Bins `webradio.2.5.0.esp32.bin` / `.esp32s3.bin`
-- [ ] Labor-Flash (nachholen)
+- [x] Labor-Flash/Smoke `.88` (gzip, hwSummary/CPU)
+
+### esp32.communicator 1.9.0 (2026-10-27)
+
+- [x] Hub-Register + Rename (trim)
+- [x] Web-/Hub-OTA; UI `web/index|login|ota.html` → gzip
+- [x] `hwSummary` / CPU / Flash in Status + Heartbeat
+- [x] Bins `communicator.1.9.0.esp32.bin` / `.esp32s3.bin`
+- [ ] Labor-Flash (nachholen — Boards aktuell io-control/webradio)
 
 ### Allgemein (weitere Nodes)
 
