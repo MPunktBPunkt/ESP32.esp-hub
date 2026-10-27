@@ -11,8 +11,8 @@ M3  BootContext / PanicTail               ✓ (1.9.2; Device-Checkliste offen)
 M4  Checkpoint                            ✓ (1.9.3; Device-Checkliste offen)
 M5  Status / Diagnostics API              ✓ (1.9.4; Doxygen + /api/diag/saved)
 M6  Breadcrumb + DiagLog                  ✓ (1.9.5; RAM/RTC/NVS)
-M7  ProgressWatch parallel                ← als Nächstes zum alten WDT
-M8  Recovery
+M7  ProgressWatch parallel                ✓ (1.9.6; Legacy-WDT bleibt)
+M8  Recovery                              ← als Nächstes
 M9  OTA Lifecycle
 M10 BaseModule / Application Contract
 M11 Cleanup / Removal of legacy paths
@@ -116,6 +116,8 @@ M11 Cleanup / Removal of legacy paths
 ## M7 — ProgressWatch parallel
 
 **Ziel:** ProgressWatch eingeführt; **alter Watchdog bleibt aktiv** (D-010).
+
+**Ist:** siehe [M7_PROGRESSWATCH.md](M7_PROGRESSWATCH.md). Zusätzlich: DiagSaved-JSON-Budget ohne kaputtes JSON.
 
 **Acceptance:** Progress-Signale für Heartbeat/OTA/Idle; beide Mechanismen loggen; kein Entfernen von `WATCHDOG_TIMEOUT_S`-Logik.
 

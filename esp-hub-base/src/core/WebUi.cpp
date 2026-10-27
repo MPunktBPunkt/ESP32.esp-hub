@@ -12,6 +12,7 @@
 #include "DiagLog.h"
 #include "DiagSaved.h"
 #include "PanicTail.h"
+#include "ProgressWatch.h"
 
 #include <Update.h>
 #include <WiFi.h>
@@ -324,6 +325,7 @@ String WebUi::buildStatusJson() const {
     PanicTail::appendStatusFields(j);
     Checkpoint::appendStatusFields(j);
     DiagLog::appendStatusFields(j);
+    ProgressWatch::appendStatusFields(j);
     j += ",\"ios\":" + ios + "}";
     return j;
 }

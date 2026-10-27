@@ -15,12 +15,13 @@ Dieses Verzeichnis hält den Umbau von `esp-hub-base` zur modularen Basisplattfo
 | [M4_CHECKPOINT.md](M4_CHECKPOINT.md) | Checkpoint enter/leave/fail, last-open |
 | [M5_STATUS_DIAG_API.md](M5_STATUS_DIAG_API.md) | Status vs. `/api/diag/saved`, Doxygen |
 | [M6_DIAGLOG.md](M6_DIAGLOG.md) | DiagLog RAM/RTC/NVS, `/api/diag/log` |
+| [M7_PROGRESSWATCH.md](M7_PROGRESSWATCH.md) | ProgressWatch parallel zum Legacy-WDT |
 
 ## Aktueller Stand
 
 - **Baseline-Verträge:** eingefroren gegen **v1.8.0**
-- **Code:** `esp-hub-base/` FW **v1.9.5** (M0–M6; DiagLog; Verträge = Baseline + Diag-APIs)
-- **Phase:** M6 fertig → als Nächstes **M7** (ProgressWatch parallel)
+- **Code:** `esp-hub-base/` FW **v1.9.6** (M0–M7; ProgressWatch parallel; Verträge = Baseline + Diag)
+- **Phase:** M7 fertig → als Nächstes **M8** (Recovery)
 - **Regel:** Bestehende Hub-/OTA-/Status-Verträge bleiben bis zur bewussten Erweiterung kompatibel
 
 ## Leitplanken (Kurz)

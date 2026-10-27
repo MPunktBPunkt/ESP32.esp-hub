@@ -12,7 +12,7 @@
 #define DEVICE_NAME            "Mein ESP32"
 #endif
 #ifndef FW_VERSION
-#define FW_VERSION             "1.9.5"
+#define FW_VERSION             "1.9.6"
 #endif
 #ifndef HUB_HOST
 #define HUB_HOST               "192.168.178.113"
@@ -31,6 +31,10 @@
 #endif
 #ifndef WATCHDOG_TIMEOUT_S
 #define WATCHDOG_TIMEOUT_S     300
+#endif
+/** ProgressWatch stall timeout (seconds); defaults to WATCHDOG_TIMEOUT_S. */
+#ifndef PROGRESS_TIMEOUT_S
+#define PROGRESS_TIMEOUT_S     WATCHDOG_TIMEOUT_S
 #endif
 #ifndef RESET_BUTTON_PIN
 #define RESET_BUTTON_PIN       0

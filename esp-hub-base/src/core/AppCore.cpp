@@ -12,6 +12,7 @@
 #include "DiagLog.h"
 #include "DiagSaved.h"
 #include "PanicTail.h"
+#include "ProgressWatch.h"
 
 #include <ESPmDNS.h>
 #include <WiFi.h>
@@ -22,6 +23,7 @@ void AppCore::begin() {
     Serial.println("\n=== ESP-Hub v" FW_VERSION " ===");
 
     BootContext::begin();
+    ProgressWatch::begin();
 
     hw_.probe();
     hw_.logToSerial();
@@ -37,6 +39,7 @@ void AppCore::begin() {
     net_.begin(deviceName_, hubHost_, hubPort_);
     Checkpoint::leave(Checkpoint::Wifi);
     PanicTail::breadcrumb(PanicTail::WifiUp);
+    ProgressWatch::note(ProgressWatch::Idle);
 
     hub_.configure(deviceName_, hubHost_, hubPort_);
 
@@ -56,9 +59,11 @@ void AppCore::begin() {
     if (hub_.sendHeartbeat(lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_)) {
         Checkpoint::leave(Checkpoint::Hub);
         PanicTail::breadcrumb(PanicTail::HubOk);
+        ProgressWatch::note(ProgressWatch::Heartbeat);
     } else {
         Checkpoint::leave(Checkpoint::Hub);
     }
+    ProgressWatch::note(ProgressWatch::Idle);
     web_.updateConfig(deviceName_, hubHost_, hubPort_, heartbeatIntervalMs_);
     lastHeartbeat_ = millis();
 }
@@ -66,6 +71,7 @@ void AppCore::begin() {
 void AppCore::loop() {
     web_.handleClient();
     unsigned long now = millis();
+    ProgressWatch::note(ProgressWatch::Idle);
     web_.pushSseIfDue(now);
 
     if (now - lastHeartbeat_ >= heartbeatIntervalMs_) {
@@ -74,6 +80,7 @@ void AppCore::loop() {
         if (hub_.sendHeartbeat(lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_)) {
             Checkpoint::leave(Checkpoint::Hub);
             PanicTail::breadcrumb(PanicTail::HubOk);
+            ProgressWatch::note(ProgressWatch::Heartbeat);
         } else {
             Checkpoint::leave(Checkpoint::Hub);
         }
@@ -83,16 +90,24 @@ void AppCore::loop() {
     if (otaPending_) {
         otaPending_ = false;
         PanicTail::breadcrumb(PanicTail::OtaStart);
+        ProgressWatch::note(ProgressWatch::Ota);
         Checkpoint::enter(Checkpoint::Ota);
         ota_.performFromUrl(otaUrl_);
         // On success, requestRestart clears open ckpt; on failure leave explicitly.
         Checkpoint::leave(Checkpoint::Ota);
+        ProgressWatch::note(ProgressWatch::Ota);
         otaUrl_ = "";
     }
 
+    ProgressWatch::evaluate(now);
+
 #if WATCHDOG_TIMEOUT_S > 0
+    // Legacy time-since-last-heartbeat-success WDT — kept until ProgressWatch is proven (D-010).
     if (now - lastSuccess_ > (unsigned long)WATCHDOG_TIMEOUT_S * 1000UL) {
         Serial.println("[WDT] Neustart");
+        DiagLog::printf("[WDT] legacy fire age_s=%lu prog_hb_stalled=%d\n",
+                        (unsigned long)((now - lastSuccess_) / 1000UL),
+                        ProgressWatch::stalled(ProgressWatch::Heartbeat, now) ? 1 : 0);
         PanicTail::breadcrumb(PanicTail::WdtFire);
         PanicTail::requestRestart(PanicTail::RestartWatchdog);
     }

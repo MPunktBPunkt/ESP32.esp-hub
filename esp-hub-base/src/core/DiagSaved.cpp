@@ -19,13 +19,21 @@ constexpr const char* kNvsNs = "ehdiag";
 constexpr const char* kKeySnap = "snap";
 constexpr size_t kMaxSnapBytes = 2048;
 
-String buildSnapshot(const HardwareInfo* hw) {
-    // Live boot/checkpoint JSON, then wrap with save metadata.
-    String body = PanicTail::buildDiagJson();
-    // PanicTail::buildDiagJson already includes checkpoint via appendDiagFields.
+void appendHwFields(String& j, const HardwareInfo* hw) {
+    if (!hw || !hw->probed()) return;
+    j += ",\"chip\":\"";
+    j += hw->chipModel();
+    j += "\",\"flashKb\":";
+    j += String(hw->flashSizeKb());
+    j += ",\"psramSize\":";
+    j += String((uint32_t)hw->psramSize());
+    j += ",\"hasPsram\":";
+    j += hw->hasPsram() ? "true" : "false";
+}
 
-    String j = "{";
+void appendMeta(String& j, bool truncated) {
     j += "\"saved\":true";
+    if (truncated) j += ",\"truncated\":true";
     j += ",\"fw\":\"";
     j += FW_VERSION;
     j += "\",\"bootGen\":";
@@ -35,31 +43,77 @@ String buildSnapshot(const HardwareInfo* hw) {
     j += "\",\"restartCause\":\"";
     j += PanicTail::restartCause();
     j += "\"";
-    if (hw && hw->probed()) {
-        j += ",\"chip\":\"";
-        j += hw->chipModel();
-        j += "\",\"flashKb\":";
-        j += String(hw->flashSizeKb());
-        j += ",\"psramSize\":";
-        j += String((uint32_t)hw->psramSize());
-        j += ",\"hasPsram\":";
-        j += hw->hasPsram() ? "true" : "false";
-    }
+}
+
+/** @brief Full snapshot including live diag object. */
+String buildFullSnapshot(const HardwareInfo* hw) {
+    String j = "{";
+    appendMeta(j, false);
+    appendHwFields(j, hw);
     j += ",\"diag\":";
-    j += body;
+    j += PanicTail::buildDiagJson();
     j += "}";
     return j;
+}
+
+/**
+ * @brief Compact but still valid JSON when the full diag blob exceeds NVS budget.
+ *
+ * Drops nested panic breadcrumbs; keeps reset/checkpoint last-open summary.
+ */
+String buildCompactSnapshot(const HardwareInfo* hw) {
+    String j = "{";
+    appendMeta(j, true);
+    appendHwFields(j, hw);
+    j += ",\"diag\":{";
+    j += "\"resetReason\":\"";
+    j += PanicTail::resetReason();
+    j += "\",\"restartCause\":\"";
+    j += PanicTail::restartCause();
+    j += "\",\"bootGen\":";
+    j += String(PanicTail::bootGeneration());
+    if (Checkpoint::hasLastCrash()) {
+        j += ",\"ckptLastOpen\":{\"phase\":\"";
+        j += Checkpoint::name(Checkpoint::lastCrashPhase());
+        j += "\",\"arg\":";
+        j += String(Checkpoint::lastCrashArg());
+        j += "}";
+    } else {
+        j += ",\"ckptLastOpen\":null";
+    }
+    j += ",\"note\":\"compact_snapshot\"";
+    j += "}}";
+    return j;
+}
+
+/** @brief Minimal always-valid fallback if even compact is somehow huge. */
+String buildMinimalSnapshot() {
+    String j = "{";
+    appendMeta(j, true);
+    j += ",\"error\":\"snapshot_budget\"";
+    j += "}";
+    return j;
+}
+
+String buildSnapshot(const HardwareInfo* hw) {
+    String full = buildFullSnapshot(hw);
+    if (full.length() <= kMaxSnapBytes) return full;
+
+    Serial.printf("[DIAG] full snapshot %u > %u, using compact\n",
+                  (unsigned)full.length(), (unsigned)kMaxSnapBytes);
+    String compact = buildCompactSnapshot(hw);
+    if (compact.length() <= kMaxSnapBytes) return compact;
+
+    Serial.printf("[DIAG] compact snapshot %u > %u, using minimal\n",
+                  (unsigned)compact.length(), (unsigned)kMaxSnapBytes);
+    return buildMinimalSnapshot();
 }
 
 }  // namespace
 
 void DiagSaved::persistBootSnapshot(const HardwareInfo* hw) {
     String snap = buildSnapshot(hw);
-    if (snap.length() > kMaxSnapBytes) {
-        Serial.printf("[DIAG] snapshot truncated %u -> %u\n",
-                      (unsigned)snap.length(), (unsigned)kMaxSnapBytes);
-        snap = snap.substring(0, kMaxSnapBytes);
-    }
+    // buildSnapshot() always returns syntactically valid JSON within budget.
     Preferences prefs;
     if (!prefs.begin(kNvsNs, false)) {
         Serial.println("[DIAG] NVS begin FAIL");
