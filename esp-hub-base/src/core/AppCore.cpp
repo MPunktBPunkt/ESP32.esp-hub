@@ -13,6 +13,7 @@
 #include "DiagSaved.h"
 #include "PanicTail.h"
 #include "ProgressWatch.h"
+#include "Recovery.h"
 
 #include <ESPmDNS.h>
 #include <WiFi.h>
@@ -109,7 +110,7 @@ void AppCore::loop() {
                         (unsigned long)((now - lastSuccess_) / 1000UL),
                         ProgressWatch::stalled(ProgressWatch::Heartbeat, now) ? 1 : 0);
         PanicTail::breadcrumb(PanicTail::WdtFire);
-        PanicTail::requestRestart(PanicTail::RestartWatchdog);
+        Recovery::requestRestart(Recovery::LegacyWatchdog, "heartbeat_timeout");
     }
 #endif
 

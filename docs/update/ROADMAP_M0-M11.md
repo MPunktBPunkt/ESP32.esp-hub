@@ -12,8 +12,8 @@ M4  Checkpoint                            ✓ (1.9.3; Device-Checkliste offen)
 M5  Status / Diagnostics API              ✓ (1.9.4; Doxygen + /api/diag/saved)
 M6  Breadcrumb + DiagLog                  ✓ (1.9.5; RAM/RTC/NVS)
 M7  ProgressWatch parallel                ✓ (1.9.6; Legacy-WDT bleibt)
-M8  Recovery                              ← als Nächstes
-M9  OTA Lifecycle
+M8  Recovery                              ✓ (1.9.7)
+M9  OTA Lifecycle                         ← als Nächstes
 M10 BaseModule / Application Contract
 M11 Cleanup / Removal of legacy paths
 ```
@@ -126,6 +126,8 @@ M11 Cleanup / Removal of legacy paths
 ## M8 — Recovery
 
 **Ziel:** Explizite Recovery-Schicht (Gründe, Escalation, Historie) (D-011).
+
+**Ist:** siehe [M8_RECOVERY.md](M8_RECOVERY.md) — `Recovery::requestRestart`, `/api/diag/recovery`.
 
 **Acceptance:** Restarts haben nachvollziehbaren Recovery-Grund im Diag-Kontext.
 

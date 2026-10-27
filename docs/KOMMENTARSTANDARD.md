@@ -30,6 +30,7 @@ Projekte die Herkunft der Basisplattform behalten.
 | `GET /api/diag/boot` | Live Boot/PanicTail/Checkpoint |
 | `GET /api/diag/saved` | Persistierter Snapshot (NVS), getrennt von Status (D-013) |
 | `GET /api/diag/log` | DiagLog RAM-Ring, prevTail, NVS-Snapshots |
+| `GET /api/diag/recovery` | Recovery-Historie und Escalation |
 
 ## Kurzregeln
 

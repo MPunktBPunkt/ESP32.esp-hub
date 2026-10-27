@@ -8,6 +8,7 @@
 
 #include "OtaService.h"
 #include "PanicTail.h"
+#include "Recovery.h"
 
 #include <HTTPClient.h>
 #include <Update.h>
@@ -49,7 +50,7 @@ void OtaService::performFromUrl(const String& url) {
     if (Update.end(true)) {
         Serial.println("[OTA] OK! Neustart...");
         http.end();
-        PanicTail::requestRestart(PanicTail::RestartHubOta);
+        Recovery::requestRestart(Recovery::HubOta, "hub_url_ok");
     } else {
         Update.printError(Serial);
     }

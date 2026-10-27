@@ -8,6 +8,7 @@
 
 #include "NetworkWifi.h"
 #include "PanicTail.h"
+#include "Recovery.h"
 
 void NetworkWifi::checkResetButton() {
     pinMode(RESET_BUTTON_PIN, INPUT_PULLUP);
@@ -22,7 +23,7 @@ void NetworkWifi::checkResetButton() {
             prefs_.begin("esphub", false);
             prefs_.clear();
             prefs_.end();
-            PanicTail::requestRestart(PanicTail::RestartWifiReset);
+            Recovery::requestRestart(Recovery::WifiReset, "boot_button");
         }
         delay(100);
     }
@@ -49,7 +50,7 @@ void NetworkWifi::begin(String& deviceName, String& hubHost, int& hubPort) {
         Serial.println("[WiFi] Portal: " WIFI_AP_NAME);
     });
     if (!wifiManager_.autoConnect(WIFI_AP_NAME)) {
-        PanicTail::requestRestart(PanicTail::RestartWifiPortalTimeout);
+        Recovery::requestRestart(Recovery::WifiPortalTimeout, "autoConnect_fail");
     }
 
     prefs_.begin("esphub", false);

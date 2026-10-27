@@ -9,6 +9,7 @@
 #include "PanicTail.h"
 #include "Checkpoint.h"
 #include "DiagLog.h"
+#include "Recovery.h"
 
 #include <esp_attr.h>
 #include <esp_system.h>
@@ -232,6 +233,7 @@ String PanicTail::buildDiagJson() {
         j += ",\"panicTail\":null";
     }
     Checkpoint::appendDiagFields(j);
+    Recovery::appendDiagFields(j);
     j += "}";
     return j;
 }

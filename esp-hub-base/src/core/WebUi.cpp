@@ -13,6 +13,7 @@
 #include "DiagSaved.h"
 #include "PanicTail.h"
 #include "ProgressWatch.h"
+#include "Recovery.h"
 
 #include <Update.h>
 #include <WiFi.h>
@@ -278,6 +279,10 @@ void WebUi::registerRoutes() {
         webServer_.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
         webServer_.send(200, F("application/json"), DiagLog::buildLogJson());
     });
+    webServer_.on("/api/diag/recovery", HTTP_GET, [this]() {
+        webServer_.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
+        webServer_.send(200, F("application/json"), Recovery::buildDiagJson());
+    });
     webServer_.on("/ota", HTTP_GET, [this]() { handleOtaPage(); });
     webServer_.on("/ota-upload", HTTP_POST,
                   [this]() { handleOtaUploadFinish(); },
@@ -326,6 +331,7 @@ String WebUi::buildStatusJson() const {
     Checkpoint::appendStatusFields(j);
     DiagLog::appendStatusFields(j);
     ProgressWatch::appendStatusFields(j);
+    Recovery::appendStatusFields(j);
     j += ",\"ios\":" + ios + "}";
     return j;
 }
@@ -403,7 +409,7 @@ void WebUi::handleOtaUploadFinish() {
         return;
     }
     webServer_.send(200, F("text/plain"), F("OK - Neustart..."));
-    PanicTail::requestRestart(PanicTail::RestartWebOta);
+    Recovery::requestRestart(Recovery::WebOta, "web_upload_ok");
 }
 
 void WebUi::handleNotFound() {

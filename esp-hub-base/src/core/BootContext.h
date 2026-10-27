@@ -11,20 +11,22 @@
 #include "DiagLog.h"
 #include "PanicTail.h"
 #include "Checkpoint.h"
+#include "Recovery.h"
 
 /**
- * @brief Boot-facing facade over DiagLog, PanicTail and Checkpoint (D-003/D-006/D-007/D-009).
+ * @brief Boot-facing facade over DiagLog, PanicTail, Checkpoint, Recovery.
  *
- * Call order: DiagLog → PanicTail → Checkpoint, then a forced boot snapshot.
+ * Call order: DiagLog → PanicTail → Checkpoint → Recovery, then a forced boot snapshot.
  */
 namespace BootContext {
-/** @brief Start diagnostic layers and print the boot summary. */
+/** @brief Start diagnostic and recovery layers and print the boot summary. */
 inline void begin() {
     DiagLog::begin();
     PanicTail::begin();
     PanicTail::logToSerial();
     Checkpoint::begin();
     Checkpoint::logToSerial();
+    Recovery::begin();
     DiagLog::persist("boot", true);
 }
 }  // namespace BootContext
