@@ -1,3 +1,11 @@
+/**
+ * @file NetworkWifi.cpp
+ * @brief WiFi setup, reconnect maintain, and portal reset.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "NetworkWifi.h"
 #include "PanicTail.h"
 

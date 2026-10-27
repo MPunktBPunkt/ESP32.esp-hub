@@ -1,3 +1,11 @@
+/**
+ * @file HardwareInfo.cpp
+ * @brief Hardware capability probe and status field helpers.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "HardwareInfo.h"
 
 void HardwareInfo::probe() {

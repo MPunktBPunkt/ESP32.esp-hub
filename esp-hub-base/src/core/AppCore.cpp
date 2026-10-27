@@ -1,6 +1,15 @@
+/**
+ * @file AppCore.cpp
+ * @brief AppCore lifecycle implementation wiring core services.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "AppCore.h"
 #include "BootContext.h"
 #include "Checkpoint.h"
+#include "DiagSaved.h"
 #include "PanicTail.h"
 
 #include <ESPmDNS.h>
@@ -15,6 +24,8 @@ void AppCore::begin() {
 
     hw_.probe();
     hw_.logToSerial();
+    // Safe Point: persist boot/checkpoint snapshot for /api/diag/saved (D-013).
+    DiagSaved::persistBootSnapshot(&hw_);
     hub_.setHardware(&hw_);
     web_.setHardware(&hw_);
 

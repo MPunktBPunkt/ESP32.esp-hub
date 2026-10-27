@@ -1,3 +1,11 @@
+/**
+ * @file OtaService.cpp
+ * @brief Blocking Hub-URL OTA implementation.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "OtaService.h"
 #include "PanicTail.h"
 

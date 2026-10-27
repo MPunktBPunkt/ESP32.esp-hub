@@ -1,14 +1,18 @@
 #pragma once
 
-// ================================================================
-//  KONFIGURATION  <-- Diese Werte anpassen (gilt für gesamtes Core)
-// ================================================================
+/**
+ * @file ProjectConfig.h
+ * @brief User-editable device/hub/timeout configuration macros.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
 
 #ifndef DEVICE_NAME
 #define DEVICE_NAME            "Mein ESP32"
 #endif
 #ifndef FW_VERSION
-#define FW_VERSION             "1.9.3"
+#define FW_VERSION             "1.9.4"
 #endif
 #ifndef HUB_HOST
 #define HUB_HOST               "192.168.178.113"

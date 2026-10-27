@@ -1,12 +1,18 @@
 #pragma once
 
 /**
- * Nested ENTER/LEAVE/FAIL checkpoints (D-006), generalized from hu-probe PhaseGate.
- * RTC (CRC) for soft-reset/panic; NVS mirror so power_on still sees last-open.
+ * @file Checkpoint.h
+ * @brief Nested ENTER/LEAVE/FAIL checkpoints across reset.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
  */
 
 #include <Arduino.h>
 
+/**
+ * @brief Nested ENTER/LEAVE/FAIL checkpoints with RTC and NVS last-open latch.
+ */
 class Checkpoint {
 public:
     enum Phase : uint8_t {

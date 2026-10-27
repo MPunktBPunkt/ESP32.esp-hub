@@ -1,9 +1,20 @@
 #pragma once
 
+/**
+ * @file HubClient.h
+ * @brief ESP-Hub register/heartbeat client.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include <Arduino.h>
 #include "EspHubConfig.h"
 #include "HardwareInfo.h"
 
+/**
+ * @brief ESP-Hub HTTP register/heartbeat client (POST /api/register).
+ */
 class HubClient {
 public:
     void setHardware(const HardwareInfo* hw) { hw_ = hw; }

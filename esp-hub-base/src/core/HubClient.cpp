@@ -1,3 +1,11 @@
+/**
+ * @file HubClient.cpp
+ * @brief Heartbeat JSON build and HTTP register POST.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "HubClient.h"
 #include "IoTypes.h"
 

@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+ * @file AppCore.h
+ * @brief Central firmware lifecycle: begin() and loop() orchestration.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "EspHubConfig.h"
 #include "HardwareInfo.h"
 #include "NetworkWifi.h"
@@ -7,10 +15,14 @@
 #include "WebUi.h"
 #include "OtaService.h"
 
-// Central lifecycle (D-005). begin()/loop() replace monolithic setup/loop bodies.
+/**
+ * @brief Central lifecycle (D-005); begin()/loop() replace monolithic setup/loop bodies.
+ */
 class AppCore {
 public:
+    /** @brief Probe hardware, start network/web/hub, send first heartbeat. */
     void begin();
+    /** @brief Drive web, heartbeat, OTA pending, legacy watchdog, WiFi maintain. */
     void loop();
 
 private:

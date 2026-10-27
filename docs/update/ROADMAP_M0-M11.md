@@ -9,8 +9,8 @@ M1  Build-/Strukturmigration              ✓ (Compile ESP32/S3; Device-Checklis
 M2  Hardware Capabilities                 ✓ (1.9.1; Device-Checkliste offen)
 M3  BootContext / PanicTail               ✓ (1.9.2; Device-Checkliste offen)
 M4  Checkpoint                            ✓ (1.9.3; Device-Checkliste offen)
-M5  Status / Diagnostics API              ← als Nächstes
-M6  Breadcrumb + DiagLog
+M5  Status / Diagnostics API              ✓ (1.9.4; Doxygen + /api/diag/saved)
+M6  Breadcrumb + DiagLog                  ← als Nächstes
 M7  ProgressWatch parallel zum alten WDT
 M8  Recovery
 M9  OTA Lifecycle
@@ -96,6 +96,8 @@ M11 Cleanup / Removal of legacy paths
 ## M5 — Status / Diagnostics API
 
 **Ziel:** `/api/status` unverändert in Pflichtfeldern; neues `/api/diag/saved` (D-012, D-013).
+
+**Ist:** siehe [M5_STATUS_DIAG_API.md](M5_STATUS_DIAG_API.md); Doxygen unter `esp-hub-base/Doxyfile`.
 
 **Acceptance:** Baseline-Status-Keys erhalten; Diag-Endpoint liefert Boot/Checkpoint-Snapshot.
 

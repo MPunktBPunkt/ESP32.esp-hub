@@ -13,12 +13,13 @@ Dieses Verzeichnis hält den Umbau von `esp-hub-base` zur modularen Basisplattfo
 | [M2_HARDWARE_CAPABILITIES.md](M2_HARDWARE_CAPABILITIES.md) | Gemeinsames HardwareInfo / Capabilities |
 | [M3_BOOTCONTEXT_PANICTAIL.md](M3_BOOTCONTEXT_PANICTAIL.md) | BootContext, PanicTail, `/api/diag/boot` |
 | [M4_CHECKPOINT.md](M4_CHECKPOINT.md) | Checkpoint enter/leave/fail, last-open |
+| [M5_STATUS_DIAG_API.md](M5_STATUS_DIAG_API.md) | Status vs. `/api/diag/saved`, Doxygen |
 
 ## Aktueller Stand
 
 - **Baseline-Verträge:** eingefroren gegen **v1.8.0**
-- **Code:** `esp-hub-base/` FW **v1.9.3** (M0–M4; Verträge = Baseline 1.8.0 + additive Keys)
-- **Phase:** M4 fertig → als Nächstes **M5** (Status / Diagnostics API)
+- **Code:** `esp-hub-base/` FW **v1.9.4** (M0–M5; Doxygen; Verträge = Baseline + Diag-APIs)
+- **Phase:** M5 fertig → als Nächstes **M6** (Breadcrumb + DiagLog)
 - **Regel:** Bestehende Hub-/OTA-/Status-Verträge bleiben bis zur bewussten Erweiterung kompatibel
 
 ## Leitplanken (Kurz)

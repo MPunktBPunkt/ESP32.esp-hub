@@ -1,6 +1,15 @@
+/**
+ * @file WebUi.cpp
+ * @brief Web routes, status JSON, SSE, and upload OTA handlers.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "WebUi.h"
 #include "IoTypes.h"
 #include "Checkpoint.h"
+#include "DiagSaved.h"
 #include "PanicTail.h"
 
 #include <Update.h>
@@ -258,6 +267,10 @@ void WebUi::registerRoutes() {
     webServer_.on("/api/diag/boot", HTTP_GET, [this]() {
         webServer_.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
         webServer_.send(200, F("application/json"), PanicTail::buildDiagJson());
+    });
+    webServer_.on("/api/diag/saved", HTTP_GET, [this]() {
+        webServer_.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
+        webServer_.send(200, F("application/json"), DiagSaved::loadJson());
     });
     webServer_.on("/ota", HTTP_GET, [this]() { handleOtaPage(); });
     webServer_.on("/ota-upload", HTTP_POST,

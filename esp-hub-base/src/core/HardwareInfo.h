@@ -1,10 +1,20 @@
 #pragma once
 
+/**
+ * @file HardwareInfo.h
+ * @brief Probed board capabilities shared by status and heartbeat.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include <Arduino.h>
 
-// Core hardware capabilities (D-017, D-019).
-// Static board traits are probed once; free* values stay live.
-// Single AppCore-owned instance is the source for Serial, Status, Heartbeat.
+/**
+ * @brief Probed board capabilities (D-017, D-019); one AppCore-owned source of truth.
+ *
+ * Static traits are captured in probe(); free heap/PSRAM/sketch stay live getters.
+ */
 class HardwareInfo {
 public:
     // Capture chip/flash/PSRAM traits. Safe to call again after OTA/restart only.

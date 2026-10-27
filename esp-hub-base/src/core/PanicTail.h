@@ -1,12 +1,18 @@
 #pragma once
 
 /**
- * RTC-retained boot trail (D-009). No flash writes — panic-/restart-safe.
- * Adapted from hu-probe PanicTail for esp-hub-base lifecycle codes.
+ * @file PanicTail.h
+ * @brief RTC-retained lifecycle breadcrumbs and restart cause.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
  */
 
 #include <Arduino.h>
 
+/**
+ * @brief RTC-retained lifecycle breadcrumbs and planned restart cause (D-009).
+ */
 class PanicTail {
 public:
     enum Code : uint8_t {

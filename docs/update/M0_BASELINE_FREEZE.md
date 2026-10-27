@@ -137,7 +137,8 @@ SSE-Push-Intervall: **IS** alle 4 s wenn Client verbunden.
 Additive (ab 1.9.1, optional): `chipRev`, `cores`, `flashKb`, `hasPsram`.  
 Additive (ab 1.9.2, optional): `resetReason`, `restartCause`, `bootGen`.  
 Additive (ab 1.9.3, optional): `ckptOpen`, `ckptLastOpen`.  
-Neu ab 1.9.2: `GET /api/diag/boot` (Diag-Vorstufe; ab 1.9.3 inkl. `checkpoint`-Objekt).
+Neu ab 1.9.2: `GET /api/diag/boot` (Diag-Vorstufe; ab 1.9.3 inkl. `checkpoint`-Objekt).  
+Neu ab 1.9.4: `GET /api/diag/saved` (persistierter Snapshot, getrennt von Status — D-013).
 
 ---
 

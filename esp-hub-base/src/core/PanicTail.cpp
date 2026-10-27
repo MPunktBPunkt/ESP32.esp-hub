@@ -1,3 +1,11 @@
+/**
+ * @file PanicTail.cpp
+ * @brief RTC PanicTail storage and JSON/diag export.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "PanicTail.h"
 #include "Checkpoint.h"
 

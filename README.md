@@ -1,6 +1,6 @@
 # ESP32.esp-hub — Basis-Firmware & Projektübersicht
 
-![Version](https://img.shields.io/badge/version-1.9.3-blue)
+![Version](https://img.shields.io/badge/version-1.9.4-blue)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-00457C.svg?logo=paypal)](https://www.paypal.com/donate/?business=martin%40bchmnn.de&currency_code=EUR)
 
@@ -10,7 +10,7 @@
 
 ## Überblick
 
-`esp-hub-base` **v1.9.3** ist die gemeinsame Grundlage aller Firmwares in dieser Familie. Sie übernimmt:
+`esp-hub-base` **v1.9.4** ist die gemeinsame Grundlage aller Firmwares in dieser Familie. Sie übernimmt:
 
 - WLAN über **WiFiManager** (Captive Portal, keine Zugangsdaten im Quellcode)
 - periodischen **Heartbeat** an den ioBroker-ESP-Hub
@@ -63,7 +63,7 @@ Portal-Namen der Familie (Beispiele):
 
 | Projekt | Version | Kurzbeschreibung | Repo |
 |---------|---------|------------------|------|
-| **ESP32.esp-hub** (diese Basis) | 1.9.3 | Heartbeat, OTA, Status-UI, Boot/PanicTail/Checkpoint, Vorlage für neue Nodes | [ESP32.esp-hub](https://github.com/MPunktBPunkt/ESP32.esp-hub) |
+| **ESP32.esp-hub** (diese Basis) | 1.9.4 | Heartbeat, OTA, Status/Diag-API, Boot/Checkpoint, Vorlage für neue Nodes | [ESP32.esp-hub](https://github.com/MPunktBPunkt/ESP32.esp-hub) |
 | **iobroker.esp-hub** | 0.5.8 | ioBroker-Adapter: Geräte, OTA, USB-Flash, Compiler, Monitor | [iobroker.esp-hub](https://github.com/MPunktBPunkt/iobroker.esp-hub) |
 | **esp32.network** | 1.6.6 | LAN-Scanner, Inventar, optional FritzBox TR-064 | [esp32.network](https://github.com/MPunktBPunkt/esp32.network) |
 | **esp32.webradio** | 2.4.0 | Internet-Radio/Podcasts im Browser, radio-browser, Favoriten | [esp32.webradio](https://github.com/MPunktBPunkt/esp32.webradio) |
@@ -165,9 +165,9 @@ Schema: `{name}.{version}.{family}.bin`
 
 | Datei | Board |
 |-------|-------|
-| `esp-hub-base.1.9.3.esp32.bin` | ESP32 / D1 Mini |
-| `esp-hub-base.1.9.3.esp32s3.bin` | ESP32-S3 N8R2 (QSPI-PSRAM, 8MB, Minimal SPIFFS) |
-| `esp-hub-base.1.9.2.*.bin` … | ältere Releases |
+| `esp-hub-base.1.9.4.esp32.bin` | ESP32 / D1 Mini |
+| `esp-hub-base.1.9.4.esp32s3.bin` | ESP32-S3 N8R2 (QSPI-PSRAM, 8MB, Minimal SPIFFS) |
+| `esp-hub-base.1.9.3.*.bin` … | ältere Releases |
 
 Gleiche Namenskonvention gilt für die abgeleiteten Repos und die Ablage unter `iobroker.esp-hub/firmware/`.
 
@@ -229,6 +229,8 @@ USB-Hinweise (LXC/Proxmox): siehe README von `iobroker.esp-hub` — Geräte-Majo
 ## Plattform-Umbau (in Arbeit)
 
 `esp-hub-base` wird schrittweise zur modularen Basisplattform (Lifecycle, Diagnostics, Recovery) ausgebaut. Verträge, ADRs und Roadmap: **[docs/update/](docs/update/README.md)**. Bis zur jeweiligen Milestone bleiben Hub-/OTA-/Status-Verträge von v1.8.0 kompatibel.
+
+Doxygen: `cd esp-hub-base && doxygen Doxyfile` → `build/docs/html/`. Kommentarstandard: [docs/KOMMENTARSTANDARD.md](docs/KOMMENTARSTANDARD.md). Jeder Source-Header verweist auf dieses Basis-Repo.
 
 ---
 

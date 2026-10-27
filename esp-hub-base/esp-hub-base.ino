@@ -1,6 +1,14 @@
+/**
+ * @file esp-hub-base.ino
+ * @brief Sketch entry: IO table, updateIoValues, AppCore setup/loop.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  esp-hub-base.ino — ESP-Hub Standard-Firmware für ESP32     ║
-// ║  Version: 1.9.3                                             ║
+// ║  Version: 1.9.4                                             ║
 // ╠══════════════════════════════════════════════════════════════╣
 // ║  Bibliotheken (Arduino Library Manager):                    ║
 // ║    - WiFiManager  von tablatronix / tzapu                   ║

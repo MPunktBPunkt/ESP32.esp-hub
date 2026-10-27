@@ -1,3 +1,11 @@
+/**
+ * @file Checkpoint.cpp
+ * @brief RTC and NVS checkpoint gate implementation.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include "Checkpoint.h"
 
 #include <Preferences.h>

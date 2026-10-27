@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+ * @file WebUi.h
+ * @brief Embedded status/SSE/OTA web server.
+ *
+ * Base repository (keep when forking/copying):
+ * https://github.com/MPunktBPunkt/ESP32.esp-hub
+ */
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
@@ -7,6 +15,9 @@
 #include "EspHubConfig.h"
 #include "HardwareInfo.h"
 
+/**
+ * @brief Status page, SSE, /api/status, /api/diag/*, and web OTA upload.
+ */
 class WebUi {
 public:
     void setHardware(const HardwareInfo* hw) { hw_ = hw; }
