@@ -5,8 +5,8 @@
 
 ## Reihenfolge
 
-1. **esp32.rfmonitor** — **1.10.5** Stufe A/B validiert: `src/esphub/` (HardwareInfo, CpuLoad), Hub-Rename, `web/index.html` → gzip-PROGMEM, UI hwSummary/CPU/Flash — Labor `.87`/`.88`
-2. **esp32.network** — Arduino-Monolith, nah an Base-Verträgen ← als Nächstes
+1. **esp32.rfmonitor** — **1.10.5** Stufe A/B validiert: `src/esphub/` (HardwareInfo, CpuLoad), Hub-Rename, `web/index.html` → gzip-PROGMEM — Labor `.87`/`.88`
+2. **esp32.network** — **1.7.0** Stufe A/B validiert: Arduino-Monolith + `src/esphub/`, `web/*.html` → gzip — Labor `.87` Smoke OK (`.88` bleibt rfmonitor)
 3. Weitere (io-control, webradio, communicator, …) nach gleichem Muster
 
 ## Strategie (inkrementell)
@@ -36,6 +36,15 @@ Nicht sofort alles auf `AppCore`+Stock-WebUi zwingen (RF/Network haben eigene UI
 - [x] gzip Web-UI (`web/index.html` → `UiPagesGz.h`, `Content-Encoding: gzip`)
 - [ ] Recovery/ProgressWatch parallel (noch nicht vendored — Stufe A nur HW/CPU; bewusst später)
 - [x] Bins `rfmonitor.1.10.5.esp32.bin` / `.esp32s3.bin` im Hub-`firmware/`
+
+### esp32.network 1.7.0 (2026-10-27)
+
+- [x] Hub-Register + Rename (reply.name, trim) — Bestand beibehalten
+- [x] Web- + Hub-OTA-Pfade unverändert; UI gzip
+- [x] `hwSummary` / Flash / CPU in `/api/status` + Heartbeat
+- [x] `web/index.html` + `web/ota.html` → `src/web/UiPagesGz.h`
+- [x] Labor-Flash/Smoke `.87` (gzip, Status-Keys, hwSummary/CPU, N4)
+- [x] Bins `network.1.7.0.esp32.bin` / `.esp32s3.bin`
 
 ### Allgemein (weitere Nodes)
 
