@@ -107,6 +107,10 @@ void AppCore::loop() {
         Checkpoint::leave(Checkpoint::Ota);
     }
 
+    // Re-sample millis after heartbeat/OTA: lastSuccess_/ProgressWatch notes use
+    // live millis(); comparing against a stale loop-start `now` underflows and
+    // falsely trips WDT (~30s after boot, right after the first periodic HB).
+    now = millis();
     ProgressWatch::evaluate(now);
 
 #if WATCHDOG_TIMEOUT_S > 0
