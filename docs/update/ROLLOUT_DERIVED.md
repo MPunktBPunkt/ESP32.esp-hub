@@ -9,9 +9,11 @@
 2. **esp32.network** — **1.7.0** Stufe A/B validiert: Arduino-Monolith + `src/esphub/`, `web/*.html` → gzip — Labor `.87` Smoke OK (`.88` bleibt rfmonitor)
 3. **esp32.io-control** — **1.7.0** Stufe A/B: Labor `.87` Smoke OK
 4. **esp32.webradio** — **2.5.0** Stufe A/B: Labor `.88` Smoke OK
-5. **esp32.communicator** — **1.9.0** Stufe A/B: Shared Core + gzip-UI (login/main/ota)
+5. **esp32.communicator** — **1.9.0** Stufe A/B: Labor `.87` Smoke OK (danach Network wiederhergestellt)
 6. **esp32.MeterMaster** — **0.5.0** Stufe A/B: Labor `.131` (OLED) Smoke OK
-7. Weitere (heartrate, ftmsprobe, …) nach gleichem Muster
+7. **esp32.heartrate** — **0.3.3** Stufe A/B: Labor `.87` Smoke OK
+8. **esp32.ftmsprobe** — **0.1.5** Stufe A/B: Labor `.87` Smoke OK
+9. Weitere (ergo/pidrive/hu-probe, …) nach gleichem Muster bzw. projektspezifisch
 
 ## Strategie (inkrementell)
 
@@ -72,7 +74,7 @@ Nicht sofort alles auf `AppCore`+Stock-WebUi zwingen (RF/Network haben eigene UI
 - [x] Web-/Hub-OTA; UI `web/index|login|ota.html` → gzip
 - [x] `hwSummary` / CPU / Flash in Status + Heartbeat
 - [x] Bins `communicator.1.9.0.esp32.bin` / `.esp32s3.bin`
-- [ ] Labor-Flash (nachholen — Boards aktuell io-control/webradio)
+- [x] Labor-Flash/Smoke `.87` (gzip, hwSummary/N4/CPU; danach Network 1.7.0 restored)
 
 ### esp32.MeterMaster 0.5.0 (Labor 2026-10-27)
 
@@ -82,6 +84,22 @@ Nicht sofort alles auf `AppCore`+Stock-WebUi zwingen (RF/Network haben eigene UI
 - [x] `web/index.html` → `src/web/UiPagesGz.h` (gzip PROGMEM)
 - [x] Labor-Flash/Smoke `.131` (gzip, Status/Meter, hwSummary/N4/CPU, registerOk/hubOk)
 - [x] Bin `metermaster.0.5.0.esp32.bin` (+ Hub-`firmware/`)
+
+### esp32.heartrate 0.3.3 (Labor 2026-10-27)
+
+- [x] Hub-Register + Rename neu (reply.name → NVS)
+- [x] Web-OTA; UI `web/index.html` → gzip-PROGMEM
+- [x] `hwSummary` / CPU / Flash in Status + Heartbeat
+- [x] Bins `heartrate.0.3.3.esp32.bin` / `.esp32s3.bin`
+- [x] Labor-Flash/Smoke `.87` (gzip, hwSummary/N4/CPU; Network restored)
+
+### esp32.ftmsprobe 0.1.5 (Labor 2026-10-27)
+
+- [x] Hub-Register + Rename neu (reply.name → NVS)
+- [x] Web-OTA; UI `web/index.html` → gzip-PROGMEM
+- [x] `hwSummary` / CPU / Flash in Status + Heartbeat
+- [x] Bins `ftmsprobe.0.1.5.esp32.bin` / `.esp32s3.bin`
+- [x] Labor-Flash/Smoke `.87` (gzip, hwSummary/CPU; Network restored)
 
 ### Allgemein (weitere Nodes)
 
