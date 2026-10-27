@@ -5,8 +5,8 @@
 
 ## Reihenfolge
 
-1. **esp32.rfmonitor** — bereits modular (PIO), Laborgeräte `.87`/`.88`
-2. **esp32.network** — Arduino-Monolith, nah an Base-Verträgen
+1. **esp32.rfmonitor** — **1.10.3** Stufe A/B: `src/esphub/` (HardwareInfo, CpuLoad), Hub-Rename, UI hwSummary/CPU/Flash — Labor `.87`/`.88`
+2. **esp32.network** — Arduino-Monolith, nah an Base-Verträgen ← als Nächstes
 3. Weitere (io-control, webradio, communicator, …) nach gleichem Muster
 
 ## Strategie (inkrementell)
