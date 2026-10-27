@@ -165,9 +165,10 @@ Schema: `{name}.{version}.{family}.bin`
 
 | Datei | Board |
 |-------|-------|
-| `esp-hub-base.1.10.4.esp32.bin` | ESP32 / D1 Mini |
-| `esp-hub-base.1.10.4.esp32s3.bin` | ESP32-S3 N8R2 (QSPI-PSRAM, 8MB, Minimal SPIFFS) |
-| `esp-hub-base.1.10.0.*.bin` … | ältere Releases |
+| `esp-hub-base.1.10.4.esp32.bin` | ESP32 / D1 Mini (aktuell) |
+| `esp-hub-base.1.10.4.esp32s3.bin` | ESP32-S3 N8R2 (aktuell) |
+| `esp-hub-base.1.10.3.*.bin` | vorherige Tagesversion |
+| `esp-hub-base.1.8.0.*.bin` | Baseline-Freeze |
 
 Gleiche Namenskonvention gilt für die abgeleiteten Repos und die Ablage unter `iobroker.esp-hub/firmware/`.
 
