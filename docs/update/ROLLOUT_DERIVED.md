@@ -10,7 +10,8 @@
 3. **esp32.io-control** — **1.7.0** Stufe A/B: Labor `.87` Smoke OK
 4. **esp32.webradio** — **2.5.0** Stufe A/B: Labor `.88` Smoke OK
 5. **esp32.communicator** — **1.9.0** Stufe A/B: Shared Core + gzip-UI (login/main/ota)
-6. Weitere (heartrate, MeterMaster, ftmsprobe, …) nach gleichem Muster
+6. **esp32.MeterMaster** — **0.5.0** Stufe A/B: Labor `.131` (OLED) Smoke OK
+7. Weitere (heartrate, ftmsprobe, …) nach gleichem Muster
 
 ## Strategie (inkrementell)
 
@@ -72,6 +73,15 @@ Nicht sofort alles auf `AppCore`+Stock-WebUi zwingen (RF/Network haben eigene UI
 - [x] `hwSummary` / CPU / Flash in Status + Heartbeat
 - [x] Bins `communicator.1.9.0.esp32.bin` / `.esp32s3.bin`
 - [ ] Labor-Flash (nachholen — Boards aktuell io-control/webradio)
+
+### esp32.MeterMaster 0.5.0 (Labor 2026-10-27)
+
+- [x] Hub-Register + Rename (reply.name → NVS `nname`)
+- [x] Web-OTA `/update`; OLED-Pfad unverändert
+- [x] `hwSummary` / Flash / CPU in `/api/sysinfo` + Heartbeat
+- [x] `web/index.html` → `src/web/UiPagesGz.h` (gzip PROGMEM)
+- [x] Labor-Flash/Smoke `.131` (gzip, Status/Meter, hwSummary/N4/CPU, registerOk/hubOk)
+- [x] Bin `metermaster.0.5.0.esp32.bin` (+ Hub-`firmware/`)
 
 ### Allgemein (weitere Nodes)
 
