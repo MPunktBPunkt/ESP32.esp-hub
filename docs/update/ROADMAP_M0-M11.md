@@ -7,8 +7,8 @@ Nach jedem Milestone: [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) geg
 M0  Contract + Baseline ins Repo          ✓
 M1  Build-/Strukturmigration              ✓ (Compile ESP32/S3; Device-Checkliste offen)
 M2  Hardware Capabilities                 ✓ (1.9.1; Device-Checkliste offen)
-M3  BootContext / PanicTail               ← als Nächstes
-M4  Checkpoint
+M3  BootContext / PanicTail               ✓ (1.9.2; Device-Checkliste offen)
+M4  Checkpoint                            ← als Nächstes
 M5  Status / Diagnostics API
 M6  Breadcrumb + DiagLog
 M7  ProgressWatch parallel zum alten WDT
@@ -76,6 +76,8 @@ M11 Cleanup / Removal of legacy paths
 ## M3 — BootContext / PanicTail
 
 **Ziel:** Reset-Reason, Boot-Count/Kontext; RTC-residenter PanicTail (D-009).
+
+**Ist:** siehe [M3_BOOTCONTEXT_PANICTAIL.md](M3_BOOTCONTEXT_PANICTAIL.md) — RTC-Tail, `/api/diag/boot`, additive Status-Keys.
 
 **Acceptance:** Nach Soft-Reset sichtbar (Serial und/oder Diag-API-Vorstufe); kein Flash-Write im Panic-Pfad.
 

@@ -8,7 +8,7 @@
 #define DEVICE_NAME            "Mein ESP32"
 #endif
 #ifndef FW_VERSION
-#define FW_VERSION             "1.9.1"
+#define FW_VERSION             "1.9.2"
 #endif
 #ifndef HUB_HOST
 #define HUB_HOST               "192.168.178.113"

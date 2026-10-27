@@ -1,4 +1,5 @@
 #include "NetworkWifi.h"
+#include "PanicTail.h"
 
 void NetworkWifi::checkResetButton() {
     pinMode(RESET_BUTTON_PIN, INPUT_PULLUP);
@@ -8,12 +9,12 @@ void NetworkWifi::checkResetButton() {
     while (digitalRead(RESET_BUTTON_PIN) == LOW) {
         if (millis() - t > (unsigned long)RESET_HOLD_SEC * 1000UL) {
             Serial.println("[RESET] Geloescht! Neustart...");
+            PanicTail::breadcrumb(PanicTail::ResetButton);
             wifiManager_.resetSettings();
             prefs_.begin("esphub", false);
             prefs_.clear();
             prefs_.end();
-            delay(500);
-            ESP.restart();
+            PanicTail::requestRestart(PanicTail::RestartWifiReset);
         }
         delay(100);
     }
@@ -40,8 +41,7 @@ void NetworkWifi::begin(String& deviceName, String& hubHost, int& hubPort) {
         Serial.println("[WiFi] Portal: " WIFI_AP_NAME);
     });
     if (!wifiManager_.autoConnect(WIFI_AP_NAME)) {
-        delay(1000);
-        ESP.restart();
+        PanicTail::requestRestart(PanicTail::RestartWifiPortalTimeout);
     }
 
     prefs_.begin("esphub", false);
@@ -58,6 +58,7 @@ void NetworkWifi::begin(String& deviceName, String& hubHost, int& hubPort) {
 
 void NetworkWifi::maintain() {
     if (WiFi.status() != WL_CONNECTED) {
+        PanicTail::breadcrumb(PanicTail::WifiLost);
         delay(5000);
         if (WiFi.status() != WL_CONNECTED) WiFi.reconnect();
     }

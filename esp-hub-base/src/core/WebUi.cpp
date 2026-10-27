@@ -1,5 +1,6 @@
 #include "WebUi.h"
 #include "IoTypes.h"
+#include "PanicTail.h"
 
 #include <Update.h>
 #include <WiFi.h>
@@ -253,6 +254,10 @@ void WebUi::registerRoutes() {
     webServer_.on("/", HTTP_GET, [this]() { handleRoot(); });
     webServer_.on("/events", HTTP_GET, [this]() { handleEvents(); });
     webServer_.on("/api/status", HTTP_GET, [this]() { handleStatus(); });
+    webServer_.on("/api/diag/boot", HTTP_GET, [this]() {
+        webServer_.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
+        webServer_.send(200, F("application/json"), PanicTail::buildDiagJson());
+    });
     webServer_.on("/ota", HTTP_GET, [this]() { handleOtaPage(); });
     webServer_.on("/ota-upload", HTTP_POST,
                   [this]() { handleOtaUploadFinish(); },
@@ -297,6 +302,7 @@ String WebUi::buildStatusJson() const {
     j += ",\"hub\":\"" + hubHost_ + ":" + String(hubPort_) + "\"";
     j += ",\"interval\":" + String(heartbeatIntervalMs_ / 1000);
     if (hw_) hw_->appendStatusFields(j);
+    PanicTail::appendStatusFields(j);
     j += ",\"ios\":" + ios + "}";
     return j;
 }
@@ -369,12 +375,12 @@ void WebUi::handleOtaUpload() {
 }
 
 void WebUi::handleOtaUploadFinish() {
-    if (Update.hasError())
+    if (Update.hasError()) {
         webServer_.send(500, F("text/plain"), F("OTA fehlgeschlagen!"));
-    else
-        webServer_.send(200, F("text/plain"), F("OK - Neustart..."));
-    delay(500);
-    ESP.restart();
+        return;
+    }
+    webServer_.send(200, F("text/plain"), F("OK - Neustart..."));
+    PanicTail::requestRestart(PanicTail::RestartWebOta);
 }
 
 void WebUi::handleNotFound() {

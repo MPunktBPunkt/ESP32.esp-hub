@@ -1,4 +1,5 @@
 #include "OtaService.h"
+#include "PanicTail.h"
 
 #include <HTTPClient.h>
 #include <Update.h>
@@ -40,8 +41,7 @@ void OtaService::performFromUrl(const String& url) {
     if (Update.end(true)) {
         Serial.println("[OTA] OK! Neustart...");
         http.end();
-        delay(500);
-        ESP.restart();
+        PanicTail::requestRestart(PanicTail::RestartHubOta);
     } else {
         Update.printError(Serial);
     }

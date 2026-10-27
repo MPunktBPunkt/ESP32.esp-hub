@@ -134,7 +134,9 @@ SSE-Push-Intervall: **IS** alle 4 s wenn Client verbunden.
 | `interval` | Heartbeat-Intervall in Sekunden |
 | `ios` | Objekt: `key → { v, u, t }` |
 
-Additive (ab 1.9.1, optional): `chipRev`, `cores`, `flashKb`, `hasPsram`.
+Additive (ab 1.9.1, optional): `chipRev`, `cores`, `flashKb`, `hasPsram`.  
+Additive (ab 1.9.2, optional): `resetReason`, `restartCause`, `bootGen`.  
+Neu ab 1.9.2: `GET /api/diag/boot` (Diag-Vorstufe, nicht Teil der 1.8.0-Baseline-Pflichtrouten).
 
 ---
 
