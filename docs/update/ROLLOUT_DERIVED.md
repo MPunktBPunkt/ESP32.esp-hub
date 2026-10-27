@@ -13,7 +13,7 @@
 6. **esp32.MeterMaster** — **0.5.0** Stufe A/B: Labor `.131` (OLED) Smoke OK
 7. **esp32.heartrate** — **0.3.3** Stufe A/B: Labor `.87` Smoke OK
 8. **esp32.ftmsprobe** — **0.1.5** Stufe A/B: Labor `.87` Smoke OK
-9. **esp32.ergo** — **0.3.25-dev** Stufe A/B: Labor `.88` Smoke OK (gzip war schon Vorbild)
+9. **esp32.ergo** — **0.3.26-dev** Stufe A/B: Labor `.88` Smoke OK (gzip + PSRAM/`HwInfo` schon da; +CpuLoad)
 10. Weitere (pidrive/hu-probe, …) projektspezifisch
 
 ## Strategie (inkrementell)
@@ -102,13 +102,13 @@ Nicht sofort alles auf `AppCore`+Stock-WebUi zwingen (RF/Network haben eigene UI
 - [x] Bins `ftmsprobe.0.1.5.esp32.bin` / `.esp32s3.bin`
 - [x] Labor-Flash/Smoke `.87` (gzip, hwSummary/CPU; Network restored)
 
-### esp32.ergo 0.3.25-dev (Labor 2026-10-27)
+### esp32.ergo 0.3.26-dev (Labor 2026-10-27)
 
 - [x] Hub-Register + Rename neu (reply.name → NVS)
-- [x] Web-OTA; gzip-UI bereits Familien-Vorbild (nur Status/Debug erweitert)
-- [x] `hwSummary` / CPU / PSRAM-Erkennung (N8R2: 2 MiB, Framework noch inaktiv) in Status + Heartbeat
-- [x] Bin `ergo.0.3.25-dev.esp32s3.bin`
-- [x] Labor-Flash/Smoke `.88` (gzip, hwSummary/N8R2/CPU; Webradio restored)
+- [x] Web-OTA; gzip-UI bereits Familien-Vorbild
+- [x] PSRAM/`HwInfo` (N8R2, aktiv) bereits ab 0.3.25; dazu `CpuLoad` + `cpu*`/`module`/`hwSummary`
+- [x] Bin `ergo.0.3.26-dev.esp32s3.bin`
+- [x] Labor-Flash/Smoke `.88` (PSRAM aktiv ~2 MiB, cpu/hwSummary/N8R2; Webradio restored)
 
 ### Allgemein (weitere Nodes)
 
