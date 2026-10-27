@@ -19,7 +19,7 @@ class OtaService;
 class ModuleManager;
 
 /**
- * @brief Status page, SSE, /api/status, /api/diag/*, and web OTA upload.
+ * @brief Status/OTA SPA (gzip PROGMEM from web/index.html), SSE, APIs.
  */
 class WebUi {
 public:

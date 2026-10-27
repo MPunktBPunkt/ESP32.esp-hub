@@ -21,12 +21,13 @@ Dieses Verzeichnis hält den Umbau von `esp-hub-base` zur modularen Basisplattfo
 | [M10_BASEMODULE.md](M10_BASEMODULE.md) | BaseModule / ModuleManager Contract |
 | [M11_CLEANUP.md](M11_CLEANUP.md) | Cleanup; Legacy-WDT bewusst behalten |
 | [ROLLOUT_DERIVED.md](ROLLOUT_DERIVED.md) | Abgeleitete Firmwares auf den Core bringen |
+| [WEBUI_GZ.md](WEBUI_GZ.md) | Web-UI: `web/index.html` → gzip-PROGMEM (Ergo-Weg) |
 | [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) | Feld-Regression (Stand 1.10.4 weitgehend PASS) |
 
 ## Aktueller Stand
 
 - **Baseline-Verträge:** eingefroren gegen **v1.8.0**
-- **Code:** `esp-hub-base/` FW **v1.10.4** (M0–M11 abgeschlossen)
+- **Code:** `esp-hub-base/` FW **v1.10.5** (M0–M11 + gzip Web-UI)
 - **Phase:** Rollout abgeleiteter Firmwares — zuerst **esp32.rfmonitor** (Stufe A/B)
 - **Regel:** Bestehende Hub-/OTA-/Status-Verträge bleiben bis zur bewussten Erweiterung kompatibel
 

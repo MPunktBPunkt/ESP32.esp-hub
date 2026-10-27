@@ -1,6 +1,6 @@
 # ESP32.esp-hub — Basis-Firmware & Projektübersicht
 
-![Version](https://img.shields.io/badge/version-1.10.4-blue)
+![Version](https://img.shields.io/badge/version-1.10.5-blue)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-00457C.svg?logo=paypal)](https://www.paypal.com/donate/?business=martin%40bchmnn.de&currency_code=EUR)
 
@@ -10,7 +10,7 @@
 
 ## Überblick
 
-`esp-hub-base` **v1.10.4** ist die gemeinsame Grundlage aller Firmwares in dieser Familie. Sie übernimmt:
+`esp-hub-base` **v1.10.5** ist die gemeinsame Grundlage aller Firmwares in dieser Familie. Sie übernimmt:
 
 - WLAN über **WiFiManager** (Captive Portal, keine Zugangsdaten im Quellcode)
 - periodischen **Heartbeat** an den ioBroker-ESP-Hub
@@ -63,7 +63,7 @@ Portal-Namen der Familie (Beispiele):
 
 | Projekt | Version | Kurzbeschreibung | Repo |
 |---------|---------|------------------|------|
-| **ESP32.esp-hub** (diese Basis) | 1.10.4 | Heartbeat, OTA-Lifecycle, BaseModule, DiagLog, ProgressWatch, Recovery | [ESP32.esp-hub](https://github.com/MPunktBPunkt/ESP32.esp-hub) |
+| **ESP32.esp-hub** (diese Basis) | 1.10.5 | Heartbeat, OTA-Lifecycle, BaseModule, gzip Web-UI, DiagLog, Recovery | [ESP32.esp-hub](https://github.com/MPunktBPunkt/ESP32.esp-hub) |
 | **iobroker.esp-hub** | 0.5.8 | ioBroker-Adapter: Geräte, OTA, USB-Flash, Compiler, Monitor | [iobroker.esp-hub](https://github.com/MPunktBPunkt/iobroker.esp-hub) |
 | **esp32.network** | 1.6.6 | LAN-Scanner, Inventar, optional FritzBox TR-064 | [esp32.network](https://github.com/MPunktBPunkt/esp32.network) |
 | **esp32.webradio** | 2.4.0 | Internet-Radio/Podcasts im Browser, radio-browser, Favoriten | [esp32.webradio](https://github.com/MPunktBPunkt/esp32.webradio) |
@@ -93,7 +93,7 @@ Portal-Namen der Familie (Beispiele):
 - **ESP-Hub Heartbeat** — Registrierung inkl. `chipModel`, `freeSketch`, optional `freePsram`/`psramSize`, `ios`
 - **IO-Werte** — eigene Messwerte im Hub-Dashboard
 - **OTA** — Hub-Push oder Drag & Drop in der ESP-Web-UI
-- **Web-UI** — Status + OTA unter `http://<ESP-IP>/` (SSE); PSRAM-Anzeige wenn aktiv
+- **Web-UI** — Status + OTA unter `http://<ESP-IP>/` (SSE, gzip aus `web/index.html`); PSRAM wenn aktiv
 - **mDNS** — typisch `http://esphub-<mac6>.local/`
 - **WLAN-Reset** — BOOT 3 s beim Einschalten
 - **PSRAM** — Boot-Log + Telemetrie; Aktivierung nur über Board/FQBN (N8R2: QSPI)
@@ -165,8 +165,8 @@ Schema: `{name}.{version}.{family}.bin`
 
 | Datei | Board |
 |-------|-------|
-| `esp-hub-base.1.10.4.esp32.bin` | ESP32 / D1 Mini (aktuell) |
-| `esp-hub-base.1.10.4.esp32s3.bin` | ESP32-S3 N8R2 (aktuell) |
+| `esp-hub-base.1.10.5.esp32.bin` | ESP32 / D1 Mini (aktuell) |
+| `esp-hub-base.1.10.5.esp32s3.bin` | ESP32-S3 N8R2 (aktuell) |
 | `esp-hub-base.1.10.3.*.bin` | vorherige Tagesversion |
 | `esp-hub-base.1.8.0.*.bin` | Baseline-Freeze |
 
@@ -186,7 +186,7 @@ Ab v1.9.0 liegt die Firmware unter `esp-hub-base/` mit Core in `src/core/` (`App
 | **MESSWERTE EINLESEN** | `updateIoValues()` | ✅ |
 | **`src/core/`** | WiFi, Web-UI, Heartbeat, OTA, Lifecycle | ❌ (Plattform) |
 
-Build: gesamten Ordner `esp-hub-base/` mit Arduino IDE / `arduino-cli compile … esp-hub-base` (nicht nur die `.ino` allein). Details: [docs/update/](docs/update/README.md).
+Build: gesamten Ordner `esp-hub-base/` mit Arduino IDE / `arduino-cli compile … esp-hub-base` (nicht nur die `.ino` allein). Web-UI: `web/index.html` → `python3 tools/pack_ui.py` → `UiPagesGz.h` committen ([WEBUI_GZ.md](docs/update/WEBUI_GZ.md)).
 
 ---
 
@@ -229,7 +229,7 @@ USB-Hinweise (LXC/Proxmox): siehe README von `iobroker.esp-hub` — Geräte-Majo
 
 ## Plattform-Umbau (M0–M11)
 
-`esp-hub-base` **v1.10.4** schließt die Migration M0–M11 ab (OTA-Lifecycle, BaseModule; Legacy-WDT bewusst behalten; WDT-`millis`-Fix). Verträge, ADRs und Roadmap: **[docs/update/](docs/update/README.md)**. Hub-/OTA-/Status-Verträge von v1.8.0 bleiben kompatibel.
+`esp-hub-base` **v1.10.5** schließt M0–M11 ab und liefert die Web-UI als gzip-PROGMEM aus `web/index.html` (Ergo-Weg). Verträge, ADRs und Roadmap: **[docs/update/](docs/update/README.md)**. Hub-/OTA-/Status-Verträge von v1.8.0 bleiben kompatibel.
 
 Doxygen: `cd esp-hub-base && doxygen Doxyfile` → `build/docs/html/`. Kommentarstandard: [docs/KOMMENTARSTANDARD.md](docs/KOMMENTARSTANDARD.md). Jeder Source-Header verweist auf dieses Basis-Repo.
 
