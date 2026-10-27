@@ -1,5 +1,6 @@
 #include "WebUi.h"
 #include "IoTypes.h"
+#include "Checkpoint.h"
 #include "PanicTail.h"
 
 #include <Update.h>
@@ -303,6 +304,7 @@ String WebUi::buildStatusJson() const {
     j += ",\"interval\":" + String(heartbeatIntervalMs_ / 1000);
     if (hw_) hw_->appendStatusFields(j);
     PanicTail::appendStatusFields(j);
+    Checkpoint::appendStatusFields(j);
     j += ",\"ios\":" + ios + "}";
     return j;
 }

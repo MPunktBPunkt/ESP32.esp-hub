@@ -1,4 +1,5 @@
 #include "PanicTail.h"
+#include "Checkpoint.h"
 
 #include <esp_attr.h>
 #include <esp_system.h>
@@ -135,6 +136,8 @@ void PanicTail::breadcrumb(Code code, uint32_t arg) {
 void PanicTail::noteRestart(RestartCause cause) {
     retained.restartCause = static_cast<uint8_t>(cause);
     breadcrumb(RestartRequested, cause);
+    // Planned restart must not look like a hung open checkpoint.
+    Checkpoint::clearOpenForPlannedRestart();
 }
 
 void PanicTail::requestRestart(RestartCause cause) {
@@ -216,6 +219,7 @@ String PanicTail::buildDiagJson() {
     } else {
         j += ",\"panicTail\":null";
     }
+    Checkpoint::appendDiagFields(j);
     j += "}";
     return j;
 }

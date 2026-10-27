@@ -8,8 +8,8 @@ M0  Contract + Baseline ins Repo          ✓
 M1  Build-/Strukturmigration              ✓ (Compile ESP32/S3; Device-Checkliste offen)
 M2  Hardware Capabilities                 ✓ (1.9.1; Device-Checkliste offen)
 M3  BootContext / PanicTail               ✓ (1.9.2; Device-Checkliste offen)
-M4  Checkpoint                            ← als Nächstes
-M5  Status / Diagnostics API
+M4  Checkpoint                            ✓ (1.9.3; Device-Checkliste offen)
+M5  Status / Diagnostics API              ← als Nächstes
 M6  Breadcrumb + DiagLog
 M7  ProgressWatch parallel zum alten WDT
 M8  Recovery
@@ -86,6 +86,8 @@ M11 Cleanup / Removal of legacy paths
 ## M4 — Checkpoint
 
 **Ziel:** Checkpoint-API (enter/leave/fail), last-open nach Reset (D-006).
+
+**Ist:** siehe [M4_CHECKPOINT.md](M4_CHECKPOINT.md) — RTC+NVS, Core-Phasen wifi/web/hub/ota.
 
 **Acceptance:** Mindestens Core-Phasen (z. B. wifi, hub, web) setzen Checkpoints; Boot meldet letzten offenen Checkpoint.
 

@@ -1,5 +1,6 @@
 #include "AppCore.h"
 #include "BootContext.h"
+#include "Checkpoint.h"
 #include "PanicTail.h"
 
 #include <ESPmDNS.h>
@@ -18,7 +19,10 @@ void AppCore::begin() {
     web_.setHardware(&hw_);
 
     net_.checkResetButton();
+
+    Checkpoint::enter(Checkpoint::Wifi);
     net_.begin(deviceName_, hubHost_, hubPort_);
+    Checkpoint::leave(Checkpoint::Wifi);
     PanicTail::breadcrumb(PanicTail::WifiUp);
 
     hub_.configure(deviceName_, hubHost_, hubPort_);
@@ -29,12 +33,18 @@ void AppCore::begin() {
     mdns = "esphub-" + mdns.substring(6);
     if (MDNS.begin(mdns.c_str())) Serial.println("[mDNS] " + mdns + ".local");
 
+    Checkpoint::enter(Checkpoint::Web);
     web_.begin(deviceName_, hubHost_, hubPort_, heartbeatIntervalMs_);
+    Checkpoint::leave(Checkpoint::Web);
     PanicTail::breadcrumb(PanicTail::WebUp);
 
     lastSuccess_ = millis();
+    Checkpoint::enter(Checkpoint::Hub);
     if (hub_.sendHeartbeat(lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_)) {
+        Checkpoint::leave(Checkpoint::Hub);
         PanicTail::breadcrumb(PanicTail::HubOk);
+    } else {
+        Checkpoint::leave(Checkpoint::Hub);
     }
     web_.updateConfig(deviceName_, hubHost_, hubPort_, heartbeatIntervalMs_);
     lastHeartbeat_ = millis();
@@ -47,8 +57,12 @@ void AppCore::loop() {
 
     if (now - lastHeartbeat_ >= heartbeatIntervalMs_) {
         lastHeartbeat_ = now;
+        Checkpoint::enter(Checkpoint::Hub);
         if (hub_.sendHeartbeat(lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_)) {
+            Checkpoint::leave(Checkpoint::Hub);
             PanicTail::breadcrumb(PanicTail::HubOk);
+        } else {
+            Checkpoint::leave(Checkpoint::Hub);
         }
         web_.updateConfig(deviceName_, hubHost_, hubPort_, heartbeatIntervalMs_);
     }
@@ -56,7 +70,10 @@ void AppCore::loop() {
     if (otaPending_) {
         otaPending_ = false;
         PanicTail::breadcrumb(PanicTail::OtaStart);
+        Checkpoint::enter(Checkpoint::Ota);
         ota_.performFromUrl(otaUrl_);
+        // On success, requestRestart clears open ckpt; on failure leave explicitly.
+        Checkpoint::leave(Checkpoint::Ota);
         otaUrl_ = "";
     }
 
