@@ -68,7 +68,9 @@ void AppCore::begin() {
 
     lastSuccess_ = millis();
     Checkpoint::enter(Checkpoint::Hub);
-    if (hub_.sendHeartbeat(lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_)) {
+    bool nameChanged = false;
+    if (hub_.sendHeartbeat(deviceName_, lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_,
+                           &nameChanged)) {
         Checkpoint::leave(Checkpoint::Hub);
         PanicTail::breadcrumb(PanicTail::HubOk);
         ProgressWatch::note(ProgressWatch::Heartbeat);
@@ -90,7 +92,9 @@ void AppCore::loop() {
     if (now - lastHeartbeat_ >= heartbeatIntervalMs_) {
         lastHeartbeat_ = now;
         Checkpoint::enter(Checkpoint::Hub);
-        if (hub_.sendHeartbeat(lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_)) {
+        bool nameChanged = false;
+        if (hub_.sendHeartbeat(deviceName_, lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_,
+                               &nameChanged)) {
             Checkpoint::leave(Checkpoint::Hub);
             PanicTail::breadcrumb(PanicTail::HubOk);
             ProgressWatch::note(ProgressWatch::Heartbeat);

@@ -10,6 +10,7 @@
 #include "IoTypes.h"
 
 #include <HTTPClient.h>
+#include <Preferences.h>
 #include <WiFi.h>
 #include <ArduinoJson.h>
 
@@ -57,10 +58,14 @@ String HubClient::buildHeartbeatJson() const {
     return out;
 }
 
-bool HubClient::sendHeartbeat(unsigned long& lastSuccessMs,
+bool HubClient::sendHeartbeat(String& deviceName,
+                              unsigned long& lastSuccessMs,
                               unsigned long& heartbeatIntervalMs,
                               bool& otaPending,
-                              String& otaUrl) {
+                              String& otaUrl,
+                              bool* nameChanged) {
+    if (nameChanged) *nameChanged = false;
+    deviceName_ = deviceName;
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("[HB] Kein WLAN");
         return false;
@@ -96,6 +101,22 @@ bool HubClient::sendHeartbeat(unsigned long& lastSuccessMs,
                     otaPending = true;
                     otaUrl = u;
                     Serial.println("[HB] OTA: " + u);
+                }
+            }
+            // Hub rename / name sync (iobroker.esp-hub reply.name).
+            if (!resp["name"].isNull()) {
+                String newName = resp["name"].as<String>();
+                newName.trim();
+                if (newName.length() > 0 && newName != deviceName) {
+                    deviceName = newName;
+                    deviceName_ = newName;
+                    Preferences prefs;
+                    if (prefs.begin("esphub", false)) {
+                        prefs.putString("name", deviceName);
+                        prefs.end();
+                    }
+                    Serial.println("[HB] Name: " + deviceName);
+                    if (nameChanged) *nameChanged = true;
                 }
             }
         }

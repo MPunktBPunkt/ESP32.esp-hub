@@ -20,12 +20,18 @@ public:
     void setHardware(const HardwareInfo* hw) { hw_ = hw; }
     void configure(const String& deviceName, const String& hubHost, int hubPort);
 
-    // Returns true on HTTP 200. Updates lastSuccessMs on success.
-    // May set otaPending/otaUrl when Hub requests OTA.
-    bool sendHeartbeat(unsigned long& lastSuccessMs,
+    /**
+     * @brief POST /api/register; updates timing/OTA/name from the Hub reply.
+     * @param[in,out] deviceName  Local name; replaced when Hub sends a new name.
+     * @param[out] nameChanged    Set true when deviceName was updated (persist/UI).
+     * @return true on HTTP 200.
+     */
+    bool sendHeartbeat(String& deviceName,
+                       unsigned long& lastSuccessMs,
                        unsigned long& heartbeatIntervalMs,
                        bool& otaPending,
-                       String& otaUrl);
+                       String& otaUrl,
+                       bool* nameChanged = nullptr);
 
     String buildHeartbeatJson() const;
 
