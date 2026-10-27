@@ -1,0 +1,687 @@
+Hier ist der ausführliche Gesamtbericht, so formuliert, dass du ihn direkt an Cursor als Umsetzungsgrundlage übergeben kannst.
+
+---
+
+# Gesamtbericht: Umbau von `ESP32.esp-hub` zur verbindlichen ESP32-Basisplattform
+
+## 1. Ziel des Vorhabens
+
+Das Ziel des Projekts ist **nicht** die Einführung eines separaten Diagnose-Repositories, sondern die **Weiterentwicklung von `ESP32.esp-hub` zur zentralen ESP32-Basissoftware** für zukünftige Projekte. Diagnostics, Lifecycle, Recovery, Status, Checkpoints und Boot-/Crash-Kontext sollen als **Core-Schicht innerhalb von `ESP32.esp-hub`** integriert werden, statt als externe Library zu driften [1].
+
+Die strategische Grundentscheidung lautet daher:
+
+- **kein neues Repo `esp-diag-core`**
+- **`ESP32.esp-hub` bleibt die Quelle der Wahrheit**
+- neue Projekte sollen von dieser Basis direkt profitieren [1]
+
+Das konsolidierte Zielbild ist:
+
+```text
+ESP32.esp-hub
+│
+├── Hardware / Board abstraction
+├── WiFi / Network
+├── ESP-Hub registration
+├── OTA
+├── Web / SSE
+├── Configuration / NVS
+├── Diagnostics
+│   ├── BootInfo
+│   ├── Reset/Panic handling
+│   ├── Breadcrumbs
+│   ├── Diagnostic Log
+│   ├── Persistent Checkpoints
+│   ├── State information
+│   ├── Progress monitoring
+│   └── Recovery information
+└── Application API
+    └── Projekt-spezifische Module
+``` [1]
+
+---
+
+# 2. Warum diese Richtung gewählt wurde
+
+Die bisherigen Projekte lösen ähnliche Probleme wiederholt:
+
+- WLAN-Reconnect
+- Speicherüberwachung
+- Reboot-Erkennung
+- Watchdogs
+- OTA
+- Status
+- Logging
+- Recovery
+- Lifecycle
+- Fehlerlokalisierung [1]
+
+Ein separates Diagnostik-Repo würde sehr wahrscheinlich zu Version- und Implementierungsdrift führen. Die konsolidierte Entscheidung lautet daher: **Die Basissoftware selbst wird erweitert**, damit alle Folgeprojekte denselben robusten Unterbau verwenden [1].
+
+---
+
+# 3. Ausgangslage des Bestandsprojekts
+
+Der aktuelle Bestand ist `esp-hub-base` v1.8.0, dokumentiert im README als Standard-Firmware für ESP32 mit:
+
+- WiFiManager
+- periodischem Heartbeat
+- OTA per Hub oder Upload
+- Status-Webseite mit SSE [2]
+
+Die README definiert außerdem wichtige aktuelle Nutzer- und Betriebsverträge:
+
+- WLAN-Konfiguration nur per WiFiManager, keine WLAN-Secrets im Sketch [2]
+- Heartbeat an `POST /api/register` [2]
+- OTA per Hub-Push oder lokaler Web-Upload [2]
+- Web-UI unter `http://<ESP-IP>/` [2]
+- mDNS unter `esphub-<mac6>.local` [2]
+- BOOT-Taste 3 s beim Einschalten für Reset [2]
+- PSRAM ist optional und buildabhängig, speziell beim ESP32-S3 N8R2 mit QSPI [2]
+
+Im Ist-Code ist die gesamte Basis als **eine einzige `.ino`-Datei** umgesetzt. Es gibt **keine Klassen**, sondern globale Objekte, globale Zustände und freie Funktionen [3].
+
+---
+
+# 4. Zusammenfassung der Schritte 1 bis 4
+
+## Schritt 1 – Vollständige Bestandsaufnahme von `ESP32.esp-hub`
+
+Es wurde festgestellt, dass das Projekt aktuell aus einer einzigen zentralen Quelle besteht:
+
+- `esp-hub-base.ino`
+- vorkompilierte Binaries
+- README
+- Hardwarefotos [1]
+
+Es gibt **kein `src/`-Verzeichnis**, kein PlatformIO-Projekt, keine Klassenstruktur und keine formalen Module [1].
+
+Die Sketch-Struktur ist bewusst in zwei Teile aufgeteilt:
+
+- konfigurierbare Bereiche:
+  - KONFIGURATION
+  - EIGENE HARDWARE
+  - IO-TABELLE
+  - `updateIoValues()`
+- danach ein interner Block „AB HIER NICHT VERÄNDERN“ [1][3]
+
+### Relevanter Befund
+Die bestehende Basis ist funktional brauchbar, aber architektonisch noch vollständig prozedural [1][3].
+
+---
+
+## Schritt 2 – Vorhandene Lifecycle-Hooks und Diagnose-Lücken identifizieren
+
+Die Analyse der Lebenszyklus-Hooks ergab:
+
+### `setup()`
+- `Serial.begin`
+- Hardware-/PSRAM-Log
+- `checkResetButton()`
+- `setupWifi()`
+- `MDNS.begin()`
+- `setupWebServer()`
+- erster `sendHeartbeat()` [1][3]
+
+### `loop()`
+- `webServer.handleClient()`
+- SSE-Push alle 4 Sekunden
+- Heartbeat nach Intervall
+- `performOta()` bei `otaPending`
+- Software-Watchdog per `lastSuccess`
+- WiFi-Reconnect
+- `delay(10)` [1][3]
+
+### Diagnoserelevante Lücken
+Es fehlen im aktuellen Code unter anderem:
+
+- Reset-Reason-Auswertung
+- Boot-Count
+- Crash-/Checkpoint-Kontext
+- echtes Progress-Modell
+- Recovery-Historie [1][3]
+
+Außerdem wurden zentrale Architekturprobleme erkannt:
+
+- `performOta()` ist blockierend [3]
+- `sendHeartbeat()` ist synchron/blockierend [3]
+- der „Watchdog“ misst nur Zeit seit letztem Heartbeat-Erfolg [3]
+- `buildStatusJson()` arbeitet mit String-Konkatenation [3]
+- `checkResetButton()` blockiert beim Boot [3]
+
+Daraus folgte eine wichtige Erkenntnis:
+Die spätere Diagnostics-Schicht kann **nicht nur additiv** eingesetzt werden, sondern erfordert auch eine **Restrukturierung der Basis** [1].
+
+---
+
+## Schritt 3 – hu-probe-Diagnosefunktionen gegen Basis-Hooks mappen
+
+In diesem Schritt wurden die in `hu-probe` erprobten Diagnosebausteine gegen die Anknüpfungspunkte der Basis gemappt [1].
+
+### Zentrale Übernahmen aus `hu-probe`
+- `PhaseGate` wird nicht kopiert, sondern zum allgemeinen **Checkpoint** weiterentwickelt [1]
+- `PhaseGate::lastCrash()` motiviert Boot-/Reset-Report mit letztem offenen Checkpoint [1]
+- DiagLog mit mehreren Persistenzebenen:
+  - RAM
+  - RTC Tail
+  - Flash Snapshot [1]
+- PanicTail / Breadcrumbs als extrem robuster Ereignis-Trail [1]
+- ProgressWatch als Ersatz für rein zeitbasierte Watchdog-Logik [1]
+- Recovery als explizites Basiskonzept [1]
+
+### Wichtigster fachlicher Schluss
+Der aktuelle Basis-Watchdog „kein Heartbeat seit 300 s → Restart“ bildet **nicht** echten Fortschritt ab. Genau hier liefert `hu-probe` die notwendige Evidenz für ein künftiges `ProgressWatch` [1][3].
+
+---
+
+## Schritt 4 – toolnode und Audit-Sheets gegen die Basis mappen
+
+`toolnode` wurde als strukturelle Blaupause identifiziert [1].
+
+### Wichtige Übernahmen
+- `BaseModule`-Vertrag mit Methoden wie:
+  - `begin()`
+  - `loop()`
+  - `appendStatusJson()`
+  - `appendIoValues()`
+  - `appendMetrics()`
+  - `handleCommand()`
+  - `registerRoutes()`
+  - `selfTest()` [1]
+
+### Architekturfolgerung
+Die Basis soll künftig eine Form annehmen, die näher an `toolnode` liegt:
+
+- `AppCore`
+- Core-Services
+- Module-Contract für Projektlogik [1]
+
+### Audit-Relevanz
+Die Audit-Sheets lieferten zusätzliche Randbedingungen:
+
+- Heartbeat soll schlank bleiben [1]
+- `diag_state` und `diag_fault` sind geeignete additive Heartbeat-Felder [1]
+- SSE allein ist nicht ausreichend; Polling-Fallback bleibt sinnvoll [1]
+- PSRAM darf nicht blind angenommen werden [1]
+- USB/WiFi-Koexistenz und Flash-Safe-Points sind relevant [1]
+
+### Ergebnis von Schritt 1–4
+Es konnte belastbar entschieden werden:
+
+1. `ESP32.esp-hub` wird zur zentralen Basisplattform [1]
+2. Diagnostics wird als Core-Schicht integriert [1]
+3. `toolnode` liefert die strukturelle Blaupause [1]
+4. `hu-probe` liefert die diagnostische Evidenzbasis [1]
+
+---
+
+# 5. Zusammenfassung von Schritt 5 – Zielarchitektur und Migrationsbild
+
+Schritt 5 bestand darin, aus den vorangegangenen Analysen ein **stabilisiertes Zielarchitekturmodell** abzuleiten [1].
+
+## Zielstruktur
+
+```text
+ESP32.esp-hub
+│
+├── App / Project
+│   ├── project configuration
+│   ├── hardware-specific IO
+│   └── application modules
+│
+├── Core
+│   ├── AppCore
+│   ├── Scheduler / LoopDriver
+│   ├── Config
+│   ├── Hardware
+│   ├── Network / WiFi
+│   ├── HubClient
+│   ├── Web / SSE
+│   └── OTA
+│
+├── Diagnostics
+│   ├── BootInfo
+│   ├── PanicTail
+│   ├── Checkpoint
+│   ├── DiagLog
+│   ├── Breadcrumb
+│   ├── ProgressWatch
+│   └── Recovery
+│
+└── Contracts
+    ├── Heartbeat
+    ├── Status
+    ├── Module
+    └── OTA
+``` [1]
+
+## Kernideen aus Schritt 5
+
+### AppCore als zentraler Lebenszyklus
+Statt losem `setup()`/`loop()` soll ein expliziter Lebenszyklus entstehen:
+
+- `AppCore::begin()`
+- `AppCore::loop()` [1]
+
+### Mehrere Zustandsarten statt einer monolithischen State-Machine
+Es werden unterschieden:
+
+- Application Lifecycle State
+- Operation / Service State
+- Diagnostic Checkpoint
+- Progress [1]
+
+### Ownership-Regeln
+Jeder Zustand hat einen Besitzer; Diagnostics beobachtet, übernimmt aber nicht die operative Verantwortung [1].
+
+### Persistenzmodell
+Diagnose und Recovery-Zustände werden gestuft gespeichert:
+
+- RAM
+- RTC_NOINIT
+- NVS
+- Flash Journal [1]
+
+### Heartbeat-Regel
+Heartbeat bleibt schlank und kompatibel; Details gehören nicht in den Heartbeat [1].
+
+### OTA-Regel
+OTA wird später als echter Lifecycle modelliert, nicht nur als `otaPending` plus blockierende Funktion [1][3].
+
+---
+
+# 6. Zusammenfassung von Schritt 6 – Architecture Decision Document
+
+Schritt 6 überführte die Architektur in **verbindliche Entscheidungen D-001 bis D-020** [1].
+
+## Wichtigste Entscheidungen
+
+### D-001
+`ESP32.esp-hub` bleibt die Basisplattform. Kein separates Repository [1].
+
+### D-002
+Diagnostics ist Core-Infrastruktur, kein normales Modul [1].
+
+### D-003
+Kein monolithischer `DiagManager`, sondern getrennte Komponenten wie BootInfo, Checkpoint, DiagLog, Breadcrumb, ProgressWatch, Recovery [1].
+
+### D-004
+State, Checkpoint und Progress sind ausdrücklich getrennte Konzepte [1].
+
+### D-005
+Es gibt einen expliziten Lifecycle-State-Machine-Ansatz für das System [1].
+
+### D-006
+Checkpoint-System wird eingeführt, generalisiert aus dem `hu-probe`-PhaseGate-Prinzip [1].
+
+### D-007 / D-008
+Persistenz folgt festen Ebenen und Flash/NVS dürfen nur an Safe Points beschrieben werden [1].
+
+### D-009
+Es gibt einen PanicTail/Boot-Trail in RTC-residentem Bereich [1].
+
+### D-010
+Der alte 300-s-Watchdog wird langfristig durch ProgressWatch ersetzt [1].
+
+### D-011
+Recovery ist eine eigene Schicht, nicht impliziter Restart-Code [1].
+
+### D-012 / D-013
+Boot-Kontext und Diagnose werden über Status-/Diag-Endpunkte sichtbar; `/api/status` und `/api/diag/saved` werden getrennt [1].
+
+### D-014
+Heartbeat bleibt kompatibel [1][2].
+
+### D-015
+OTA wird als echte Operation mit Lifecycle modelliert [1].
+
+### D-016
+Ein BaseModule-Vertrag bleibt auf Application-Ebene [1].
+
+### D-017
+Hardware gehört in Core, nicht in Diagnostics [1].
+
+### D-018
+PlatformIO ist **noch keine harte Entscheidung** [1].
+
+### D-019
+Keine PSRAM-Annahme; Capabilities werden ermittelt, nicht geraten [1][2][3].
+
+### D-020
+Diagnostics darf Timing und kritische Pfade nicht zerstören [1].
+
+---
+
+# 7. Zusammenfassung von Schritt 7 – Gap-Matrix gegen D-001 bis D-020
+
+Schritt 7 war die systematische Bestandsaufnahme des aktuellen Codes gegen die Architecture Decisions [1][3].
+
+## Ergebnisbild
+
+### Bereits vorhanden / gute Anker
+- `ESP32.esp-hub` ist bereits die Basisplattform [1][2]
+- Heartbeat ist vorhanden und kompatibel aufgebaut [2][3]
+- OTA-Grundfunktion ist vorhanden [2][3]
+- Web-UI und `/api/status` existieren [2][3]
+- NVS-Basis ist vorhanden [3]
+- Hardware-/PSRAM-Erkennung ist vorhanden [2][3]
+
+### Fehlend
+- expliziter Lifecycle
+- BootContext
+- Reset-Historie
+- Checkpoint
+- Breadcrumb/PanicTail
+- ProgressWatch
+- Recovery-Schicht
+- Module-Contract [1][3]
+
+### Aktive Architekturkonflikte
+- alter `lastSuccess`-Watchdog [3]
+- blockierendes OTA [3]
+- mehrere blockierende Pfade in Boot/Loop/WLAN [3]
+
+## Wichtige Korrektur an der Bewertung
+Ein Punkt wurde bewusst nachgeschärft:
+
+- D-003 („kein monolithischer DiagManager“) sollte **nicht einfach als erfüllt** gezählt werden, nur weil noch gar keine Diagnostics-Schicht existiert.  
+  Richtiger ist:
+  - **nicht verletzt**
+  - Zielarchitektur aber noch nicht implementiert
+
+Diese Denkregel wurde allgemein festgehalten:
+
+> Abwesenheit eines Problems ist nicht automatisch Erfüllung der Zielarchitektur.
+
+## Folgerung aus Schritt 7
+Schritt 7 wurde als **ausreichend belastbar** bewertet, aber mit der klaren Empfehlung, **vor dem Umbau zuerst den Ist-Contract einzufrieren** [1].
+
+---
+
+# 8. Zusammenfassung von Schritt 8 – Contract & Baseline Freeze
+
+Schritt 8 war bewusst **noch keine Implementierung**, sondern das formale Einfrieren des Ist-Verhaltens als Referenz vor jedem Umbau [1][2][3].
+
+## Zweck
+Vor M1–M11 muss klar dokumentiert sein:
+
+- was die Firmware heute tut
+- welche Verträge bestehen
+- was kompatibel bleiben muss
+- was intern geändert werden darf
+- wie Regressionen verifiziert werden [1]
+
+## Eingefrorene Baseline-Bereiche
+
+### Build / Projekt
+- aktuell Arduino-`.ino`, kein `src/`, kein PlatformIO [1][2][3]
+
+### Boot
+- `Serial.begin`
+- Hardware-/PSRAM-Log
+- Reset-Button-Check
+- WLAN-Setup
+- mDNS
+- Webserver
+- erster Heartbeat [3]
+
+### Reset
+- BOOT-Taste 3 s beim Einschalten löscht WiFiManager-/NVS-Daten und startet neu [2][3]
+
+### WLAN
+- WiFiManager-Portal, Captive SSID `ESP-Hub-Setup` [2][3]
+
+### NVS
+- Namespace `esphub`
+- Keys:
+  - `name`
+  - `hub_host`
+  - `hub_port` [3]
+
+### Hardware
+- `ESP.getChipModel()`
+- Revision
+- Cores
+- Flash
+- PSRAM-Größe und freier PSRAM [3]
+
+### Web / Status / SSE
+- `/`
+- `/events`
+- `/api/status`
+- `/ota`
+- `/ota-upload` [3]
+
+### Heartbeat
+- `POST /api/register`
+- Felder u. a.:
+  - `mac`
+  - `name`
+  - `hwType`
+  - `chipModel`
+  - `version`
+  - `ip`
+  - `rssi`
+  - `uptime`
+  - `freeHeap`
+  - `freeSketch`
+  - `freePsram`
+  - `psramSize`
+  - `ios` [2][3]
+
+### OTA
+- via `otaUrl` aus Hub-Antwort [3]
+- via lokaler Web-Upload [2][3]
+
+### Blocking-/Timing-Befunde
+- `checkResetButton()` blockiert [3]
+- `performOta()` blockiert [3]
+- WLAN-Reconnect blockiert mit `delay(5000)` [3]
+- Loop enthält `delay(10)` [3]
+
+## Baseline-Regeln
+Harte Kompatibilitätsanker:
+
+- Heartbeat-Endpoint und Grundpayload [2][3]
+- OTA per Hub und Upload [2][3]
+- Web-UI-Grundfunktion [2][3]
+- WiFiManager-Portal [2][3]
+- NVS-Basis-Keys [3]
+- Board-/PSRAM-Verhalten laut README und Sketch [2][3]
+
+---
+
+# 9. Wie die Entscheidungen entstanden sind
+
+Für Cursor besonders wichtig ist nicht nur **was** entschieden wurde, sondern **warum**.
+
+## 9.1 Quellenbasis der Entscheidungen
+
+Die Architektur entstand nicht frei erfunden, sondern aus vier Evidenzsträngen:
+
+1. **Bestandscode von `ESP32.esp-hub`**  
+   → zeigt reale aktuelle Verträge und Probleme [3]
+
+2. **README und Projektdokumentation**  
+   → zeigt dokumentierte Nutzer- und Hub-Verträge [2]
+
+3. **Erfahrungen aus `hu-probe`**  
+   → liefern Evidenz für Checkpoint, PanicTail, DiagLog, ProgressWatch und Recovery [1]
+
+4. **Strukturmuster aus `toolnode` und Audit-Sheets**  
+   → liefern Blaupause für AppCore, Module-Contract und sauberere Basisschnittstellen [1]
+
+## 9.2 Wesentliche Schlussfolgerungen
+
+### Schlussfolgerung A
+Nicht „mehr Logging“ ist das Ziel, sondern eine **fehlertolerante Basisplattform** mit explizitem Lifecycle, beobachtbarem Zustand und Recovery-Kontext [1].
+
+### Schlussfolgerung B
+State-Machine allein reicht nicht.  
+Benötigt werden getrennt:
+
+- Lifecycle State
+- Operation State
+- Checkpoint
+- Progress
+- Recovery [1]
+
+### Schlussfolgerung C
+Die kritischsten heutigen Architekturkonflikte sind nicht theoretisch, sondern im bestehenden Code sichtbar:
+
+- Heartbeat-basierter Zeit-Watchdog [3]
+- blockierendes OTA [3]
+- blockierende Loop-/Reconnect-/Bootpfade [3]
+
+### Schlussfolgerung D
+Vor jedem Umbau müssen die **heutigen Verträge konserviert** werden, sonst wird bei der „Verbesserung“ unbemerkt der bestehende Hub-/OTA-/Status-Vertrag verändert [1][2][3]
+
+---
+
+# 10. Konsolidiertes Gesamtbild nach 8 Schritten
+
+Nach den bisherigen acht Schritten ist die Lage wie folgt:
+
+## FACT
+`ESP32.esp-hub` besitzt bereits funktionierende Basisanker:
+
+- WiFi
+- Hub-Heartbeat
+- Web/Status
+- OTA
+- NVS
+- Hardware-/PSRAM-Erkennung [2][3]
+
+## FACT
+Es fehlen:
+
+- expliziter Lifecycle
+- Checkpoints
+- Boot-/Reset-Kontext
+- Progress-Modell
+- Recovery-Schicht
+- Diagnostics-Contract
+- Module-Contract [1][3]
+
+## FACT
+Es existieren aktive Architekturkonflikte:
+
+- zeitbasierter Watchdog
+- blockierendes OTA
+- weitere Blocking-Pfade [1][3]
+
+## DECISION
+Die Zielarchitektur wird **inkrementell und verhaltenskonservierend** eingeführt [1].
+
+## DECISION
+Bestehende funktionierende Contracts werden zuerst geschützt und erst danach erweitert [1][2]
+
+## UNKNOWN / DECISION PENDING
+Noch offen bleiben u. a.:
+
+- endgültiger Buildstandard / PlatformIO [1]
+- Partitionierung [1][2]
+- RTC-/NVS-Datenformate [1]
+- Flash-Journal-Größe [1]
+- Coredump-Handling [1]
+- Recovery-Matrix [1]
+- finale Module-API [1]
+
+---
+
+# 11. Konsequenz für Cursor: Was jetzt als Umsetzungsgrundlage gilt
+
+Cursor soll **nicht bei null neu entwerfen**, sondern auf diesem Architektur- und Baseline-Stand aufbauen.
+
+## Für die Umsetzung gilt:
+
+### 1. `ESP32.esp-hub` bleibt das Zielrepo
+Kein neues Diagnostik-Repo anlegen [1].
+
+### 2. Bestehende Verträge müssen anfangs erhalten bleiben
+Insbesondere:
+
+- Heartbeat
+- OTA
+- `/api/status`
+- WiFiManager-Portal
+- NVS-Keys
+- Web-UI-Grundfunktion [2][3]
+
+### 3. Die Architekturentscheidungen D-001 bis D-020 sind die verbindliche Leitplanke
+Sie sind die Grundlage für jede strukturelle und funktionale Umsetzung [1].
+
+### 4. Schritt 8 ist die letzte Vorstufe vor dem eigentlichen Umbau
+Vor weiteren Codearbeiten ist die Baseline die Referenz, gegen die Regressionen gemessen werden [1][2][3]
+
+---
+
+# 12. Empfohlene nächste Umsetzungsreihenfolge
+
+Die bisherige Planung wurde konsolidiert zu:
+
+```text
+M0  Contract + Baseline ins Repo übernehmen
+M1  Build-/Strukturmigration
+M2  Hardware Capabilities
+M3  BootContext / PanicTail
+M4  Checkpoint
+M5  Status / Diagnostics API
+M6  Breadcrumb + DiagLog
+M7  ProgressWatch parallel zum alten Watchdog
+M8  Recovery
+M9  OTA Lifecycle
+M10 BaseModule / Application Contract
+M11 Cleanup / Removal of legacy paths
+```
+
+Wichtige Sicherheitsregel:
+
+> Der alte Watchdog darf erst ersetzt werden, wenn ProgressWatch parallel eingeführt, getestet und als zuverlässig bewertet wurde [1].
+
+---
+
+# 13. Übergabetext für Cursor
+
+Nachfolgend eine kompakte Direktanweisung, die du Cursor geben kannst:
+
+## Cursor-Startanweisung
+
+Du arbeitest auf Basis eines konsolidierten Architektur- und Migrationsplans für `ESP32.esp-hub`.
+
+### Ziel
+`ESP32.esp-hub` soll von einer prozeduralen `.ino`-Basis zu einer modularen, fehlertoleranten ESP32-Basisplattform weiterentwickelt werden. Diagnostics, Boot-/Reset-Kontext, Checkpoint, ProgressWatch, Recovery und spätere Module gehören in den Core der Basis – nicht in ein separates Repository [1].
+
+### Verbindliche Randbedingungen
+- Kein neues Repo anlegen [1]
+- Bestehende Hub-/OTA-/Status-Verträge zunächst kompatibel halten [2][3]
+- Heartbeat nicht zum Diagnose-Dump aufblasen [1][2]
+- Flash/NVS nur an Safe Points für Diagnosepersistenz verwenden [1]
+- Diagnostics darf keine Timing-/Blocking-Probleme erzeugen oder verschärfen [1]
+
+### Ausgangslage
+Der aktuelle Code ist eine einzige `.ino`-Datei mit:
+- WiFiManager
+- Heartbeat
+- Web-UI
+- SSE
+- OTA
+- NVS-Basiskonfiguration [2][3]
+
+### Wichtigste aktuelle technische Defizite
+- kein BootContext
+- kein Checkpoint
+- kein Progress-Modell
+- kein Recovery-Layer
+- Heartbeat-basierter Zeit-Watchdog
+- blockierendes OTA
+- weitere blockierende Pfade [1][3]
+
+### Architekturentscheidungen
+Arbeite entlang D-001 bis D-020 aus dem Schritt-6-Stand.  
+State, Checkpoint, Progress und Recovery sind getrennte Konzepte [1].
+
+### Umsetzungsstrategie
+Verhaltenskonservierend, inkrementell, überprüfbar.  
+Zuerst Struktur und Basiskontrakte schützen, dann neue Core-Fähigkeiten einführen [1].
+
+---
