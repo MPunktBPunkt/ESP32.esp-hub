@@ -1,6 +1,7 @@
 # Rollout — Abgeleitete Firmwares auf esp-hub-base
 
 **Stand:** Base **1.10.5**, Migration M0–M11 + gzip Web-UI fertig.  
+**A/B-Freeze:** [AUDIT_BASE_A-B_2026-10-27.md](AUDIT_BASE_A-B_2026-10-27.md) — Verträge, Drift, Labor-Matrix.  
 **Ziel:** Produkt-Firmwares nutzen denselben Core (Hub/OTA/Recovery/HW/CPU/Rename), Projeklogik als Module oder klare App-Schicht.
 
 ## Reihenfolge

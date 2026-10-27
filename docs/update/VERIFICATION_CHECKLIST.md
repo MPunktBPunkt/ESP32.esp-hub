@@ -45,7 +45,7 @@ Bezug: [M0_BASELINE_FREEZE.md](M0_BASELINE_FREEZE.md).
 - [x] Gerät in Hub-Liste mit Name, IP, Version, chipModel
 - [x] Payload enthält Baseline-Felder; Heartbeat schlank
 - [x] Hub-Rename → `reply.name` → Gerät übernimmt (1.10.4 + Hub 0.5.15)
-- [ ] Hub kann `interval` setzen (≥5 s) → Gerät übernimmt (nicht explizit getestet)
+- [x] Hub kann `interval` setzen (≥5 s) → Gerät übernimmt — Code + Live: Hub-Default 30 s, `.87` network `interval:30` (2026-10-27; Config-Wechsel nicht separat gegen Admin gefahren)
 - [x] Heartbeat bleibt schlank (kein Diagnose-Dump)
 
 ## F. OTA

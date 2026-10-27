@@ -23,12 +23,13 @@ Dieses Verzeichnis hält den Umbau von `esp-hub-base` zur modularen Basisplattfo
 | [ROLLOUT_DERIVED.md](ROLLOUT_DERIVED.md) | Abgeleitete Firmwares auf den Core bringen |
 | [WEBUI_GZ.md](WEBUI_GZ.md) | Web-UI: `web/index.html` → gzip-PROGMEM (Ergo-Weg) |
 | [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) | Feld-Regression (Stand 1.10.4 weitgehend PASS) |
+| [AUDIT_BASE_A-B_2026-10-27.md](AUDIT_BASE_A-B_2026-10-27.md) | Vertrags-/Drift-Audit nach A/B-Rollout (Freeze) |
 
 ## Aktueller Stand
 
 - **Baseline-Verträge:** eingefroren gegen **v1.8.0**
 - **Code:** `esp-hub-base/` FW **v1.10.5** (M0–M11 + gzip Web-UI)
-- **Phase:** Rollout abgeleiteter Firmwares — zuerst **esp32.rfmonitor** (Stufe A/B)
+- **Phase:** Stufe A/B an Derived laborgeprüft — siehe [AUDIT_BASE_A-B_2026-10-27.md](AUDIT_BASE_A-B_2026-10-27.md); C/D (Recovery/Diag überall) bewusst später
 - **Regel:** Bestehende Hub-/OTA-/Status-Verträge bleiben bis zur bewussten Erweiterung kompatibel
 
 ## Leitplanken (Kurz)
