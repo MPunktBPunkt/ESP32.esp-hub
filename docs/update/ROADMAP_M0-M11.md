@@ -6,8 +6,8 @@ Nach jedem Milestone: [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) geg
 ```text
 M0  Contract + Baseline ins Repo          ✓
 M1  Build-/Strukturmigration              ✓ (Compile ESP32/S3; Device-Checkliste offen)
-M2  Hardware Capabilities                 ← als Nächstes
-M3  BootContext / PanicTail
+M2  Hardware Capabilities                 ✓ (1.9.1; Device-Checkliste offen)
+M3  BootContext / PanicTail               ← als Nächstes
 M4  Checkpoint
 M5  Status / Diagnostics API
 M6  Breadcrumb + DiagLog
@@ -66,6 +66,8 @@ M11 Cleanup / Removal of legacy paths
 ## M2 — Hardware Capabilities
 
 **Ziel:** Explizites Capability-Objekt (Chip, Flash, PSRAM, …) im Core (D-017, D-019).
+
+**Ist:** siehe [M2_HARDWARE_CAPABILITIES.md](M2_HARDWARE_CAPABILITIES.md) — `HardwareInfo::probe()` + shared pointer; additive Status-Keys.
 
 **Acceptance:** Status/Heartbeat/HW-Log beziehen sich auf dieselbe Quelle; PSRAM=0 weiterhin korrekt.
 

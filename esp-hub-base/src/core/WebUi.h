@@ -9,6 +9,7 @@
 
 class WebUi {
 public:
+    void setHardware(const HardwareInfo* hw) { hw_ = hw; }
     void begin(const String& deviceName, const String& hubHost, int hubPort,
                unsigned long heartbeatIntervalMs);
     void updateConfig(const String& deviceName, const String& hubHost, int hubPort,
@@ -31,7 +32,7 @@ private:
 
     WebServer webServer_{80};
     WiFiClient sseClient_;
-    HardwareInfo hw_;
+    const HardwareInfo* hw_ = nullptr;
 
     String deviceName_ = DEVICE_NAME;
     String hubHost_ = HUB_HOST;

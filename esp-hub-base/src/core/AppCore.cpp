@@ -7,7 +7,11 @@ void AppCore::begin() {
     Serial.begin(115200);
     delay(500);
     Serial.println("\n=== ESP-Hub v" FW_VERSION " ===");
+
+    hw_.probe();
     hw_.logToSerial();
+    hub_.setHardware(&hw_);
+    web_.setHardware(&hw_);
 
     net_.checkResetButton();
     net_.begin(deviceName_, hubHost_, hubPort_);

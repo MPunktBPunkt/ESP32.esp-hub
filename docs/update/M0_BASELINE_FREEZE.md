@@ -134,6 +134,8 @@ SSE-Push-Intervall: **IS** alle 4 s wenn Client verbunden.
 | `interval` | Heartbeat-Intervall in Sekunden |
 | `ios` | Objekt: `key → { v, u, t }` |
 
+Additive (ab 1.9.1, optional): `chipRev`, `cores`, `flashKb`, `hasPsram`.
+
 ---
 
 ## 9. Heartbeat (Hub-Vertrag)

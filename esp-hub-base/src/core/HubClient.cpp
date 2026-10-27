@@ -28,15 +28,15 @@ String HubClient::buildHeartbeatJson() const {
     doc["mac"] = macNoColon();
     doc["name"] = deviceName_;
     doc["hwType"] = "esp32";
-    doc["chipModel"] = hw_.chipModel();
+    doc["chipModel"] = hw_ ? hw_->chipModel() : String(ESP.getChipModel());
     doc["version"] = FW_VERSION;
     doc["ip"] = WiFi.localIP().toString();
     doc["rssi"] = WiFi.RSSI();
     doc["uptime"] = millis() / 1000UL;
-    doc["freeHeap"] = hw_.freeHeap();
-    doc["freeSketch"] = hw_.freeSketchSpace();
-    doc["freePsram"] = hw_.freePsram();
-    doc["psramSize"] = hw_.psramSize();
+    doc["freeHeap"] = hw_ ? hw_->freeHeap() : ESP.getFreeHeap();
+    doc["freeSketch"] = hw_ ? hw_->freeSketchSpace() : ESP.getFreeSketchSpace();
+    doc["freePsram"] = hw_ ? hw_->freePsram() : ESP.getFreePsram();
+    doc["psramSize"] = hw_ ? hw_->psramSize() : ESP.getPsramSize();
     JsonObject ios = doc["ios"].to<JsonObject>();
     for (int i = 0; i < IO_COUNT; i++) {
         JsonObject io = ios[ioTable[i].key].to<JsonObject>();
@@ -76,13 +76,13 @@ bool HubClient::sendHeartbeat(unsigned long& lastSuccessMs,
         DynamicJsonDocument resp(512);
 #endif
         if (deserializeJson(resp, body) == DeserializationError::Ok) {
-            if (resp.containsKey("interval")) {
+            if (resp["interval"].is<int>()) {
                 unsigned long ni = (unsigned long)(int)resp["interval"] * 1000UL;
                 if (ni != heartbeatIntervalMs && ni >= 5000UL) {
                     heartbeatIntervalMs = ni;
                 }
             }
-            if (resp.containsKey("otaUrl") && !resp["otaUrl"].isNull()) {
+            if (!resp["otaUrl"].isNull()) {
                 String u = resp["otaUrl"].as<String>();
                 if (u.length() > 0) {
                     otaPending = true;

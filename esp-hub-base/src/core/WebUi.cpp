@@ -278,19 +278,25 @@ String WebUi::buildStatusJson() const {
              + ",\"u\":\"" + ioTable[i].unit + "\",\"t\":\"" + ioTable[i].type + "\"}";
     }
     ios += "}";
+    const String chip = hw_ ? hw_->chipModel() : String(ESP.getChipModel());
+    const uint32_t heap = hw_ ? hw_->freeHeap() : ESP.getFreeHeap();
+    const size_t psramFree = hw_ ? hw_->freePsram() : ESP.getFreePsram();
+    const size_t psramSize = hw_ ? hw_->psramSize() : ESP.getPsramSize();
+    const uint32_t sketch = hw_ ? hw_->freeSketchSpace() : ESP.getFreeSketchSpace();
     String j = "{";
     j += "\"name\":\"" + deviceName_ + "\"";
-    j += ",\"chip\":\"" + hw_.chipModel() + "\"";
+    j += ",\"chip\":\"" + chip + "\"";
     j += ",\"mac\":\"" + macNoColon() + "\"";
     j += ",\"ip\":\"" + WiFi.localIP().toString() + "\"";
     j += ",\"rssi\":" + String(WiFi.RSSI());
     j += ",\"uptime\":\"" + fmtUptime(millis() / 1000UL) + "\"";
-    j += ",\"heap\":" + String(hw_.freeHeap());
-    j += ",\"psram\":" + String(hw_.freePsram());
-    j += ",\"psramSize\":" + String(hw_.psramSize());
-    j += ",\"sketch\":" + String(hw_.freeSketchSpace());
+    j += ",\"heap\":" + String(heap);
+    j += ",\"psram\":" + String(psramFree);
+    j += ",\"psramSize\":" + String(psramSize);
+    j += ",\"sketch\":" + String(sketch);
     j += ",\"hub\":\"" + hubHost_ + ":" + String(hubPort_) + "\"";
     j += ",\"interval\":" + String(heartbeatIntervalMs_ / 1000);
+    if (hw_) hw_->appendStatusFields(j);
     j += ",\"ios\":" + ios + "}";
     return j;
 }
