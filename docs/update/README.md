@@ -24,7 +24,7 @@ Dieses Verzeichnis hält den Umbau von `esp-hub-base` zur modularen Basisplattfo
 ## Aktueller Stand
 
 - **Baseline-Verträge:** eingefroren gegen **v1.8.0**
-- **Code:** `esp-hub-base/` FW **v1.10.1** (M0–M11; OTA-Lifecycle, BaseModule; Legacy-WDT bleibt; WDT-millis-Fix)
+- **Code:** `esp-hub-base/` FW **v1.10.2** (M0–M11; OTA-Lifecycle, BaseModule; Legacy-WDT bleibt; WDT-millis-Fix)
 - **Phase:** M11 fertig — Migration M0–M11 abgeschlossen (Device-Verification offen)
 - **Regel:** Bestehende Hub-/OTA-/Status-Verträge bleiben bis zur bewussten Erweiterung kompatibel
 

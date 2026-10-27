@@ -67,7 +67,7 @@ static const char PAGE_BODY[] PROGMEM = R"HTML(
 <div class="content">
   <div class="card"><h3>Geraet</h3><table>
     <tr><td>Name</td><td id="d-name">-</td></tr>
-    <tr><td>Chip</td><td id="d-chip">-</td></tr>
+    <tr><td>Hardware</td><td id="d-hw" style="font-size:12px;line-height:1.45;color:#c9d1d9">-</td></tr>
     <tr><td>MAC</td><td class="mono" id="d-mac">-</td></tr>
     <tr><td>IP-Adresse</td><td class="mono" id="d-ip">-</td></tr>
     <tr><td>WLAN RSSI</td><td id="d-rssi">-</td></tr>
@@ -106,7 +106,7 @@ function applyStatus(s){
 
 static const char PAGE_SCRIPT[] PROGMEM = R"HTML(';
   document.getElementById('d-name').textContent=s.name||'';
-  document.getElementById('d-chip').textContent=s.chip||'';
+  document.getElementById('d-hw').textContent=s.hwSummary||(s.chip||'-');
   document.getElementById('d-mac').textContent=s.mac||'';
   document.getElementById('d-ip').innerHTML='<a href="http://'+s.ip+'" style="color:#58a6ff">'+s.ip+'</a>';
   document.getElementById('d-rssi').textContent=(s.rssi||0)+' dBm';
