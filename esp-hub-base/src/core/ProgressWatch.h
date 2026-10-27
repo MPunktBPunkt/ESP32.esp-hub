@@ -19,7 +19,7 @@
  * @brief Tracks forward progress on Idle / Heartbeat / OTA channels.
  *
  * M7 rule: evaluate() may log and expose stall state, but must not replace the
- * legacy lastSuccess watchdog — that stays active until M11.
+ * legacy lastSuccess watchdog — kept after M11 until Field-Evidence (D-010).
  */
 class ProgressWatch {
 public:

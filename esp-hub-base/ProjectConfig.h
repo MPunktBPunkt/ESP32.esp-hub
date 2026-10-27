@@ -12,7 +12,11 @@
 #define DEVICE_NAME            "Mein ESP32"
 #endif
 #ifndef FW_VERSION
-#define FW_VERSION             "1.9.7"
+#define FW_VERSION             "1.10.0"
+#endif
+/** Set to 1 in the sketch to register ExampleUptimeModule (M10 demo). */
+#ifndef ESPHUB_ENABLE_EXAMPLE_MODULE
+#define ESPHUB_ENABLE_EXAMPLE_MODULE 0
 #endif
 #ifndef HUB_HOST
 #define HUB_HOST               "192.168.178.113"

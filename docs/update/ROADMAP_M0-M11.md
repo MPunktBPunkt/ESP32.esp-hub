@@ -13,9 +13,9 @@ M5  Status / Diagnostics API              ✓ (1.9.4; Doxygen + /api/diag/saved)
 M6  Breadcrumb + DiagLog                  ✓ (1.9.5; RAM/RTC/NVS)
 M7  ProgressWatch parallel                ✓ (1.9.6; Legacy-WDT bleibt)
 M8  Recovery                              ✓ (1.9.7)
-M9  OTA Lifecycle                         ← als Nächstes
-M10 BaseModule / Application Contract
-M11 Cleanup / Removal of legacy paths
+M9  OTA Lifecycle                         ✓ (1.10.0)
+M10 BaseModule / Application Contract     ✓ (1.10.0)
+M11 Cleanup / Legacy-Removal              ✓ (1.10.0; Legacy-WDT bleibt per D-010)
 ```
 
 ---
@@ -137,6 +137,8 @@ M11 Cleanup / Removal of legacy paths
 
 **Ziel:** OTA als Operation mit States/Progress statt rein blockierendem One-Shot (D-015).
 
+**Ist:** siehe [M9_OTA_LIFECYCLE.md](M9_OTA_LIFECYCLE.md) — States, Progress, Hub-/Web-OTA.
+
 **Acceptance:** Hub- und Web-OTA funktionieren; Progress beobachtbar; Wechselwirkung mit Watchdog/ProgressWatch definiert.
 
 ---
@@ -144,6 +146,8 @@ M11 Cleanup / Removal of legacy paths
 ## M10 — BaseModule / Application Contract
 
 **Ziel:** Module-API für Projektlogik (D-016); IO/Status-Hooks über Contract.
+
+**Ist:** siehe [M10_BASEMODULE.md](M10_BASEMODULE.md) — `BaseModule` / `ModuleManager` / Example.
 
 **Acceptance:** Base-Firmware ohne Extra-Module = Baseline-Verhalten; Beispiel-Modul dokumentiert.
 
@@ -153,6 +157,8 @@ M11 Cleanup / Removal of legacy paths
 
 **Ziel:** Legacy-Pfade entfernen, die durch M1–M10 ersetzt sind — **inkl.** Entscheidung zum alten Zeit-Watchdog nur wenn ProgressWatch bewährt.
 
+**Ist:** siehe [M11_CLEANUP.md](M11_CLEANUP.md) — Legacy-WDT bewusst behalten (D-010 deferred).
+
 **Acceptance:** Keine toten Globals; D-010 erfüllt oder bewusst als ADR-Update verschoben; Verification + manuelle Hub-Regression grün.
 
 ---
@@ -161,7 +167,7 @@ M11 Cleanup / Removal of legacy paths
 
 | Thema | Frühestens |
 |-------|------------|
-| Alter WDT entfernen | M11 (nach M7-Bewährung) |
+| Alter WDT entfernen | nach M11 / Field-Evidence (D-010) |
 | Heartbeat mit Diag-Dump füllen | nie (D-014); additive Mini-Felder erst nach Hub-Abstimmung |
 | Separates Diag-Repo | nie (D-001) |
 | PlatformIO als Pflicht | erst nach ADR-Update zu D-018 |

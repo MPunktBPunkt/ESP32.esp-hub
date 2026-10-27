@@ -17,12 +17,15 @@ Dieses Verzeichnis hält den Umbau von `esp-hub-base` zur modularen Basisplattfo
 | [M6_DIAGLOG.md](M6_DIAGLOG.md) | DiagLog RAM/RTC/NVS, `/api/diag/log` |
 | [M7_PROGRESSWATCH.md](M7_PROGRESSWATCH.md) | ProgressWatch parallel zum Legacy-WDT |
 | [M8_RECOVERY.md](M8_RECOVERY.md) | Recovery-Schicht, `/api/diag/recovery` |
+| [M9_OTA_LIFECYCLE.md](M9_OTA_LIFECYCLE.md) | OTA States/Progress (Hub + Web) |
+| [M10_BASEMODULE.md](M10_BASEMODULE.md) | BaseModule / ModuleManager Contract |
+| [M11_CLEANUP.md](M11_CLEANUP.md) | Cleanup; Legacy-WDT bewusst behalten |
 
 ## Aktueller Stand
 
 - **Baseline-Verträge:** eingefroren gegen **v1.8.0**
-- **Code:** `esp-hub-base/` FW **v1.9.7** (M0–M8; Recovery; Verträge = Baseline + Diag)
-- **Phase:** M8 fertig → als Nächstes **M9** (OTA Lifecycle)
+- **Code:** `esp-hub-base/` FW **v1.10.0** (M0–M11; OTA-Lifecycle, BaseModule; Legacy-WDT bleibt)
+- **Phase:** M11 fertig — Migration M0–M11 abgeschlossen (Device-Verification offen)
 - **Regel:** Bestehende Hub-/OTA-/Status-Verträge bleiben bis zur bewussten Erweiterung kompatibel
 
 ## Leitplanken (Kurz)
@@ -30,5 +33,5 @@ Dieses Verzeichnis hält den Umbau von `esp-hub-base` zur modularen Basisplattfo
 1. Kein separates Diagnostik-Repo — Core bleibt in diesem Repo.
 2. Heartbeat bleibt schlank; Diagnose-Details gehören nicht in `POST /api/register`.
 3. Flash/NVS für Diagnose nur an Safe Points.
-4. Alter 300-s-Watchdog erst ersetzen, wenn ProgressWatch parallel bewährt ist.
+4. Alter 300-s-Watchdog erst ersetzen, wenn ProgressWatch parallel bewährt ist (D-010: nach M11 deferred).
 5. Diagnostics darf Timing/Blocking nicht verschärfen.

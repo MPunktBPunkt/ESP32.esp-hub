@@ -14,15 +14,22 @@
 #include "HubClient.h"
 #include "WebUi.h"
 #include "OtaService.h"
+#include "ModuleManager.h"
 
 /**
  * @brief Central lifecycle (D-005); begin()/loop() replace monolithic setup/loop bodies.
  */
 class AppCore {
 public:
-    /** @brief Probe hardware, start network/web/hub, send first heartbeat. */
+    /**
+     * @brief Access the module registry (call add() before begin()).
+     * @return Module manager reference.
+     */
+    ModuleManager& modules() { return modules_; }
+
+    /** @brief Probe hardware, start network/web/hub/modules, send first heartbeat. */
     void begin();
-    /** @brief Drive web, heartbeat, OTA pending, legacy watchdog, WiFi maintain. */
+    /** @brief Drive web, modules, heartbeat, OTA, progress/WDT, WiFi maintain. */
     void loop();
 
 private:
@@ -31,6 +38,7 @@ private:
     HubClient hub_;
     WebUi web_;
     OtaService ota_;
+    ModuleManager modules_;
 
     String deviceName_ = DEVICE_NAME;
     String hubHost_ = HUB_HOST;

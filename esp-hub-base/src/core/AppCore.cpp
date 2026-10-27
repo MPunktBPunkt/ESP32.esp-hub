@@ -28,11 +28,12 @@ void AppCore::begin() {
 
     hw_.probe();
     hw_.logToSerial();
-    // Safe Point: structured diag snapshot + text log snapshot (D-008/D-013).
     DiagSaved::persistBootSnapshot(&hw_);
     DiagLog::persist("hw", false);
     hub_.setHardware(&hw_);
     web_.setHardware(&hw_);
+    web_.setOta(&ota_);
+    web_.setModules(&modules_);
 
     net_.checkResetButton();
 
@@ -55,6 +56,14 @@ void AppCore::begin() {
     Checkpoint::leave(Checkpoint::Web);
     PanicTail::breadcrumb(PanicTail::WebUp);
 
+    // Pump web clients during Hub OTA download so SSE/status stay observable.
+    ota_.setYield(+[]() {
+        // No capture — WebUi exposes a static pump from the live instance.
+        WebUi::pumpActiveClient();
+    });
+
+    modules_.beginAll();
+
     lastSuccess_ = millis();
     Checkpoint::enter(Checkpoint::Hub);
     if (hub_.sendHeartbeat(lastSuccess_, heartbeatIntervalMs_, otaPending_, otaUrl_)) {
@@ -71,6 +80,7 @@ void AppCore::begin() {
 
 void AppCore::loop() {
     web_.handleClient();
+    modules_.loopAll();
     unsigned long now = millis();
     ProgressWatch::note(ProgressWatch::Idle);
     web_.pushSseIfDue(now);
@@ -90,21 +100,20 @@ void AppCore::loop() {
 
     if (otaPending_) {
         otaPending_ = false;
-        PanicTail::breadcrumb(PanicTail::OtaStart);
-        ProgressWatch::note(ProgressWatch::Ota);
         Checkpoint::enter(Checkpoint::Ota);
-        ota_.performFromUrl(otaUrl_);
-        // On success, requestRestart clears open ckpt; on failure leave explicitly.
-        Checkpoint::leave(Checkpoint::Ota);
-        ProgressWatch::note(ProgressWatch::Ota);
+        ota_.scheduleUrl(otaUrl_);
         otaUrl_ = "";
+        ota_.poll();  // blocking; success restarts via Recovery
+        Checkpoint::leave(Checkpoint::Ota);
     }
 
     ProgressWatch::evaluate(now);
 
 #if WATCHDOG_TIMEOUT_S > 0
-    // Legacy time-since-last-heartbeat-success WDT — kept until ProgressWatch is proven (D-010).
-    if (now - lastSuccess_ > (unsigned long)WATCHDOG_TIMEOUT_S * 1000UL) {
+    // D-010 / M11: legacy WDT retained until ProgressWatch is field-proven.
+    // While OTA is active, do not trip — download can exceed the heartbeat window.
+    if (!ota_.active() &&
+        now - lastSuccess_ > (unsigned long)WATCHDOG_TIMEOUT_S * 1000UL) {
         Serial.println("[WDT] Neustart");
         DiagLog::printf("[WDT] legacy fire age_s=%lu prog_hb_stalled=%d\n",
                         (unsigned long)((now - lastSuccess_) / 1000UL),

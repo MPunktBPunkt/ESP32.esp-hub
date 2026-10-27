@@ -11,12 +11,16 @@
 #include "Checkpoint.h"
 #include "DiagLog.h"
 #include "DiagSaved.h"
+#include "ModuleManager.h"
+#include "OtaService.h"
 #include "PanicTail.h"
 #include "ProgressWatch.h"
 #include "Recovery.h"
 
 #include <Update.h>
 #include <WiFi.h>
+
+WebUi* WebUi::active_ = nullptr;
 
 // ── PROGMEM HTML ─────────────────────────────────────────────────
 
@@ -249,10 +253,16 @@ static String fmtUptime(unsigned long s) {
 
 void WebUi::begin(const String& deviceName, const String& hubHost, int hubPort,
                   unsigned long heartbeatIntervalMs) {
+    active_ = this;
     updateConfig(deviceName, hubHost, hubPort, heartbeatIntervalMs);
     registerRoutes();
+    if (modules_) modules_->registerRoutes(webServer_);
     webServer_.begin();
     Serial.println("[WEB] http://" + WiFi.localIP().toString() + "/");
+}
+
+void WebUi::pumpActiveClient() {
+    if (active_) active_->handleClient();
 }
 
 void WebUi::updateConfig(const String& deviceName, const String& hubHost, int hubPort,
@@ -332,6 +342,8 @@ String WebUi::buildStatusJson() const {
     DiagLog::appendStatusFields(j);
     ProgressWatch::appendStatusFields(j);
     Recovery::appendStatusFields(j);
+    if (ota_) ota_->appendStatusFields(j);
+    if (modules_) modules_->appendStatusJson(j);
     j += ",\"ios\":" + ios + "}";
     return j;
 }
@@ -389,22 +401,20 @@ void WebUi::handleOtaPage() {
 
 void WebUi::handleOtaUpload() {
     HTTPUpload& upload = webServer_.upload();
+    if (!ota_) return;
     if (upload.status == UPLOAD_FILE_START) {
-        Serial.printf("[WEB-OTA] Start: %s\n", upload.filename.c_str());
-        if (!Update.begin(UPDATE_SIZE_UNKNOWN)) Update.printError(Serial);
+        ota_->webBegin(upload.filename.c_str());
     } else if (upload.status == UPLOAD_FILE_WRITE) {
-        if (Update.write(upload.buf, upload.currentSize) != upload.currentSize)
-            Update.printError(Serial);
+        ota_->webWrite(upload.buf, upload.currentSize);
     } else if (upload.status == UPLOAD_FILE_END) {
-        if (Update.end(true))
-            Serial.printf("\n[WEB-OTA] OK %u Bytes\n", upload.totalSize);
-        else
-            Update.printError(Serial);
+        const bool ok = !Update.hasError();
+        ota_->webFinish(ok);
+        if (ok) Serial.printf("\n[WEB-OTA] OK %u Bytes\n", upload.totalSize);
     }
 }
 
 void WebUi::handleOtaUploadFinish() {
-    if (Update.hasError()) {
+    if (!ota_ || ota_->state() == OtaService::Failed || Update.hasError()) {
         webServer_.send(500, F("text/plain"), F("OTA fehlgeschlagen!"));
         return;
     }
