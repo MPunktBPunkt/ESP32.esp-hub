@@ -1,0 +1,5 @@
+# Arduino / arduino-cli local build trees
+esp-hub-base/build/
+**/build/
+*.elf
+*.map

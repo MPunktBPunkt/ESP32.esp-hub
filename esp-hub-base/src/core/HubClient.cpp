@@ -1,0 +1,99 @@
+#include "HubClient.h"
+#include "IoTypes.h"
+
+#include <HTTPClient.h>
+#include <WiFi.h>
+#include <ArduinoJson.h>
+
+void HubClient::configure(const String& deviceName, const String& hubHost, int hubPort) {
+    deviceName_ = deviceName;
+    hubHost_ = hubHost;
+    hubPort_ = hubPort;
+}
+
+static String macNoColon() {
+    String mac = WiFi.macAddress();
+    mac.replace(":", "");
+    mac.toUpperCase();
+    return mac;
+}
+
+String HubClient::buildHeartbeatJson() const {
+    updateIoValues();
+#if ARDUINOJSON_VERSION_MAJOR >= 7
+    JsonDocument doc;
+#else
+    DynamicJsonDocument doc(1024);
+#endif
+    doc["mac"] = macNoColon();
+    doc["name"] = deviceName_;
+    doc["hwType"] = "esp32";
+    doc["chipModel"] = hw_.chipModel();
+    doc["version"] = FW_VERSION;
+    doc["ip"] = WiFi.localIP().toString();
+    doc["rssi"] = WiFi.RSSI();
+    doc["uptime"] = millis() / 1000UL;
+    doc["freeHeap"] = hw_.freeHeap();
+    doc["freeSketch"] = hw_.freeSketchSpace();
+    doc["freePsram"] = hw_.freePsram();
+    doc["psramSize"] = hw_.psramSize();
+    JsonObject ios = doc["ios"].to<JsonObject>();
+    for (int i = 0; i < IO_COUNT; i++) {
+        JsonObject io = ios[ioTable[i].key].to<JsonObject>();
+        io["type"] = ioTable[i].type;
+        io["value"] = ioTable[i].value;
+        if (ioTable[i].unit.length() > 0) io["unit"] = ioTable[i].unit;
+    }
+    String out;
+    serializeJson(doc, out);
+    return out;
+}
+
+bool HubClient::sendHeartbeat(unsigned long& lastSuccessMs,
+                              unsigned long& heartbeatIntervalMs,
+                              bool& otaPending,
+                              String& otaUrl) {
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("[HB] Kein WLAN");
+        return false;
+    }
+    String payload = buildHeartbeatJson();
+    String url = "http://" + hubHost_ + ":" + String(hubPort_) + "/api/register";
+    Serial.println("[HB] -> " + url);
+    HTTPClient http;
+    http.begin(url);
+    http.addHeader(F("Content-Type"), F("application/json"));
+    http.setTimeout(8000);
+    int code = http.POST(payload);
+    bool ok = false;
+    if (code == 200) {
+        String body = http.getString();
+        lastSuccessMs = millis();
+        ok = true;
+#if ARDUINOJSON_VERSION_MAJOR >= 7
+        JsonDocument resp;
+#else
+        DynamicJsonDocument resp(512);
+#endif
+        if (deserializeJson(resp, body) == DeserializationError::Ok) {
+            if (resp.containsKey("interval")) {
+                unsigned long ni = (unsigned long)(int)resp["interval"] * 1000UL;
+                if (ni != heartbeatIntervalMs && ni >= 5000UL) {
+                    heartbeatIntervalMs = ni;
+                }
+            }
+            if (resp.containsKey("otaUrl") && !resp["otaUrl"].isNull()) {
+                String u = resp["otaUrl"].as<String>();
+                if (u.length() > 0) {
+                    otaPending = true;
+                    otaUrl = u;
+                    Serial.println("[HB] OTA: " + u);
+                }
+            }
+        }
+    } else {
+        Serial.printf("[HB] HTTP %d\n", code);
+    }
+    http.end();
+    return ok;
+}
